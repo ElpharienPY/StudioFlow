@@ -40,11 +40,18 @@ Enum member_role {
   viewer
 }
 
+Enum project_health_status {
+  kickoff
+  in_production
+  almost_done
+  on_track
+}
+
 Table users {
   id int [pk, increment]
   full_name varchar(100) [not null]
   email varchar(255) [not null, unique]
-  password_hash varchar(255) [not null, note: 'bcrypt, jamais exposé par l API']
+  password_hash varchar(255) [null, note: 'bcrypt, jamais exposé par l API — null si compte OAuth uniquement']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -63,10 +70,27 @@ Table refresh_tokens {
   }
 }
 
+Table accounts {
+  id int [pk, increment]
+  user_id int [not null]
+  provider varchar(50) [not null, note: 'ex: google']
+  provider_account_id varchar(255) [not null]
+  access_token text [null]
+  refresh_token text [null]
+  expires_at datetime [null]
+  created_at datetime [not null]
+
+  Indexes {
+    (provider, provider_account_id) [unique]
+    user_id
+  }
+}
+
 Table projects {
   id int [pk, increment]
   name varchar(150) [not null]
   description text [null]
+  health_status project_health_status [not null, default: 'kickoff', note: 'saisi à la main par le owner']
   archived_at datetime [null, note: 'suppression logique']
   created_at datetime [not null]
   updated_at datetime [not null]
@@ -139,6 +163,7 @@ Table comments {
 Table assets {
   id int [pk, increment]
   deliverable_id int [not null]
+  uploaded_by int [null]
   label varchar(150) [not null]
   url varchar(500) [not null]
   kind asset_kind [not null]
@@ -147,10 +172,12 @@ Table assets {
 
   Indexes {
     (deliverable_id, kind)
+    uploaded_by
   }
 }
 
 Ref: refresh_tokens.user_id > users.id [delete: cascade]
+Ref: accounts.user_id > users.id [delete: cascade]
 Ref: project_members.project_id > projects.id [delete: cascade]
 Ref: project_members.user_id > users.id [delete: cascade]
 Ref: deliverables.project_id > projects.id [delete: cascade]
@@ -159,3 +186,4 @@ Ref: tasks.assignee_id >? users.id [delete: set null]
 Ref: comments.task_id > tasks.id [delete: cascade]
 Ref: comments.author_id > users.id [delete: cascade]
 Ref: assets.deliverable_id > deliverables.id [delete: cascade]
+Ref: assets.uploaded_by >? users.id [delete: set null]
