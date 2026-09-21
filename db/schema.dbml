@@ -70,6 +70,10 @@ Table projects {
   archived_at datetime [null, note: 'suppression logique']
   created_at datetime [not null]
   updated_at datetime [not null]
+
+  Indexes {
+    archived_at
+  }
 }
 
 Table project_members {
@@ -115,6 +119,7 @@ Table tasks {
   Indexes {
     (deliverable_id, status, position)
     assignee_id
+    due_date
   }
 }
 
@@ -126,7 +131,8 @@ Table comments {
   created_at datetime [not null]
 
   Indexes {
-    task_id
+    (task_id, created_at)
+    author_id
   }
 }
 
@@ -140,7 +146,7 @@ Table assets {
   created_at datetime [not null]
 
   Indexes {
-    deliverable_id
+    (deliverable_id, kind)
   }
 }
 
