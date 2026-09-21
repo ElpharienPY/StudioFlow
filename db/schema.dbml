@@ -1,0 +1,161 @@
+Project StudioFlow {
+  database_type: 'MySQL'
+  Note: 'Gestion de production audiovisuelle — MOD8'
+}
+
+Enum task_status {
+  todo
+  doing
+  done
+}
+
+Enum task_stage {
+  concept
+  script
+  shooting
+  editing
+  thumbnail
+  publishing
+}
+
+Enum deliverable_platform {
+  youtube
+  tiktok
+  instagram
+  client
+  other
+}
+
+Enum asset_kind {
+  script
+  raw_footage
+  edit
+  thumbnail
+  export
+}
+
+Enum member_role {
+  owner
+  editor
+  viewer
+}
+
+Table users {
+  id int [pk, increment]
+  full_name varchar(100) [not null]
+  email varchar(255) [not null, unique]
+  password_hash varchar(255) [not null, note: 'bcrypt, jamais exposé par l API']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table refresh_tokens {
+  id int [pk, increment]
+  user_id int [not null]
+  token_hash char(64) [not null, unique, note: 'SHA-256 du jeton, jamais le jeton brut']
+  expires_at datetime [not null]
+  revoked_at datetime [null, note: 'NULL = session active']
+  user_agent varchar(255) [null]
+  created_at datetime [not null]
+
+  Indexes {
+    user_id
+  }
+}
+
+Table projects {
+  id int [pk, increment]
+  name varchar(150) [not null]
+  description text [null]
+  archived_at datetime [null, note: 'suppression logique']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  Indexes {
+    archived_at
+  }
+}
+
+Table project_members {
+  project_id int [not null]
+  user_id int [not null]
+  role member_role [not null, default: 'editor']
+  joined_at datetime [not null]
+
+  Indexes {
+    (project_id, user_id) [pk]
+    user_id
+  }
+}
+
+Table deliverables {
+  id int [pk, increment]
+  project_id int [not null]
+  title varchar(150) [not null]
+  platform deliverable_platform [not null, default: 'youtube']
+  publish_date date [null]
+  revision_round int [not null, default: 0]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  Indexes {
+    (project_id, publish_date)
+  }
+}
+
+Table tasks {
+  id int [pk, increment]
+  deliverable_id int [not null]
+  assignee_id int [null]
+  title varchar(150) [not null]
+  description text [null]
+  status task_status [not null, default: 'todo']
+  stage task_stage [null]
+  due_date date [null]
+  position int [not null, default: 0]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  Indexes {
+    (deliverable_id, status, position)
+    assignee_id
+    due_date
+  }
+}
+
+Table comments {
+  id int [pk, increment]
+  task_id int [not null]
+  author_id int [not null]
+  body text [not null]
+  created_at datetime [not null]
+
+  Indexes {
+    (task_id, created_at)
+    author_id
+  }
+}
+
+Table assets {
+  id int [pk, increment]
+  deliverable_id int [not null]
+  label varchar(150) [not null]
+  url varchar(500) [not null]
+  kind asset_kind [not null]
+  version int [not null, default: 1]
+  created_at datetime [not null]
+
+  Indexes {
+    (deliverable_id, kind)
+  }
+}
+
+Ref: refresh_tokens.user_id > users.id [delete: cascade]
+Ref: project_members.project_id > projects.id [delete: cascade]
+Ref: project_members.user_id > users.id [delete: cascade]
+Ref: deliverables.project_id > projects.id [delete: cascade]
+Ref: tasks.deliverable_id > deliverables.id [delete: cascade]
+Ref: tasks.assignee_id >? users.id [delete: set null]
+Ref: comments.task_id > tasks.id [delete: cascade]
+Ref: comments.author_id > users.id [delete: cascade]
+Ref: assets.deliverable_id > deliverables.id [delete: cascade]

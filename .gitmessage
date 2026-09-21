@@ -1,0 +1,8 @@
+# <type>: <description courte, sous 72 caractères, à l'impératif>
+# Types autorisés : feat | fix | docs | chore | refactor | test | style
+#
+# Corps (optionnel) : expliquer le POURQUOI, pas le COMMENT.
+# Séparer le corps du sujet par une ligne vide. Rester en français.
+
+# Pied (optionnel) : référencer une issue/milestone si utile.
+# Ex : Refs #12
