@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS `deliverables`;
 DROP TABLE IF EXISTS `project_members`;
 DROP TABLE IF EXISTS `projects`;
 DROP TABLE IF EXISTS `refresh_tokens`;
+DROP TABLE IF EXISTS `accounts`;
 DROP TABLE IF EXISTS `users`;
 
 
@@ -18,8 +19,8 @@ CREATE TABLE `users` (
   `id`            INT           NOT NULL AUTO_INCREMENT,
   `full_name`     VARCHAR(100)  NOT NULL,
   `email`         VARCHAR(255)  NOT NULL,
-  -- bcrypt hash, never send this back in the API
-  `password_hash` VARCHAR(255)  NOT NULL,
+  -- bcrypt hash, never send this back in the API. null = OAuth-only account (see accounts table)
+  `password_hash` VARCHAR(255)  NULL,
   `created_at`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP
                   ON UPDATE CURRENT_TIMESTAMP,
@@ -47,15 +48,37 @@ CREATE TABLE `refresh_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+-- one row per OAuth provider linked to a user (e.g. google), auth.js-shaped on purpose
+CREATE TABLE `accounts` (
+  `id`                  INT          NOT NULL AUTO_INCREMENT,
+  `user_id`             INT          NOT NULL,
+  `provider`            VARCHAR(50)  NOT NULL,
+  `provider_account_id` VARCHAR(255) NOT NULL,
+  `access_token`        TEXT         NULL,
+  `refresh_token`       TEXT         NULL,
+  `expires_at`          DATETIME     NULL,
+  `created_at`          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_accounts_provider` (`provider`, `provider_account_id`),
+  KEY `idx_accounts_user` (`user_id`),
+  CONSTRAINT `fk_accounts_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 CREATE TABLE `projects` (
-  `id`          INT          NOT NULL AUTO_INCREMENT,
-  `name`        VARCHAR(150) NOT NULL,
-  `description` TEXT         NULL,
+  `id`            INT          NOT NULL AUTO_INCREMENT,
+  `name`          VARCHAR(150) NOT NULL,
+  `description`   TEXT         NULL,
+  -- manually set by the project owner, not derived from tasks
+  `health_status` ENUM('kickoff','in_production','almost_done','on_track')
+                  NOT NULL DEFAULT 'kickoff',
   -- null = still active, this is our soft delete
-  `archived_at` DATETIME     NULL,
-  `created_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-                ON UPDATE CURRENT_TIMESTAMP,
+  `archived_at`   DATETIME     NULL,
+  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+                  ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_projects_archived` (`archived_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -99,6 +122,7 @@ CREATE TABLE `deliverables` (
 
 -- status = kanban column (todo/doing/done), stage = production step, they're independent
 -- careful: "stage != 'editing'" skips NULL rows in SQL, use "stage IS NULL OR stage != 'editing'"
+-- a deliverable's "current stage" (see mockups) isn't stored — derive it from its tasks' stages
 CREATE TABLE `tasks` (
   `id`             INT          NOT NULL AUTO_INCREMENT,
   `deliverable_id` INT          NOT NULL,
@@ -149,6 +173,8 @@ CREATE TABLE `comments` (
 CREATE TABLE `assets` (
   `id`             INT          NOT NULL AUTO_INCREMENT,
   `deliverable_id` INT          NOT NULL,
+  -- null = uploader account was deleted, keep the asset
+  `uploaded_by`    INT          NULL,
   `label`          VARCHAR(150) NOT NULL,
   `url`            VARCHAR(500) NOT NULL,
   `kind`           ENUM('script','raw_footage','edit','thumbnail','export') NOT NULL,
@@ -156,7 +182,11 @@ CREATE TABLE `assets` (
   `created_at`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_assets_deliverable` (`deliverable_id`, `kind`),
+  KEY `idx_assets_uploaded_by` (`uploaded_by`),
   CONSTRAINT `fk_assets_deliverable`
     FOREIGN KEY (`deliverable_id`) REFERENCES `deliverables` (`id`)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_assets_uploaded_by`
+    FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
