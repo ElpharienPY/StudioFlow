@@ -120,10 +120,15 @@ async function submitComment() {
         <div class="field">
           <dt>Stage</dt>
           <dd>
-            <select :value="task.stage ?? ''" @change="store.updateTaskStage(task.id, $event.target.value || null)">
+            <select
+              v-if="canEdit"
+              :value="task.stage ?? ''"
+              @change="store.updateTaskStage(task.id, $event.target.value || null)"
+            >
               <option value="">—</option>
               <option v-for="s in STAGE_ORDER" :key="s" :value="s">{{ s }}</option>
             </select>
+            <template v-else>{{ task.stage ?? '—' }}</template>
           </dd>
         </div>
       </dl>
