@@ -103,5 +103,7 @@ starting a new revision round, editing an asset.
 
 **Remaining for Dec 14, 2026**
 
-- Final Milestone 3 write-up in `docs/` — TODO.
+- Final Milestone 3 write-up: [docs/StudioFlow — Milestone 3.docx](StudioFlow — Milestone 3.docx)
+  (screenshots in `docs/screenshots/milestone-3/`) — written; its "Who did what in Milestone 3"
+  section is still a TODO for the team, like the task distribution above.
 - Presentation (5–7 min) — TODO.
