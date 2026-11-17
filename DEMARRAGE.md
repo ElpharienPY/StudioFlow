@@ -4,6 +4,7 @@
 2. **Backend** (terminal 1) :
    ```powershell
    cd backend
+   Copy-Item .env.example .env   # une seule fois : configuration locale (jamais commitée)
    npm install
    npm run db:reset     # crée les tables + données de démo (efface la base)
    npm run dev          # http://localhost:4000  (test : /health/db)
@@ -15,6 +16,13 @@
    npm run dev          # http://localhost:5173
    ```
 4. Ouvre **http://localhost:5173** (pas 127.0.0.1) et connecte-toi : `user1@studioflow.co` / `password123`.
+
+## Connexion Google : à savoir
+
+Pour essayer l'application, utilise les comptes de démo ci-dessus, pas Google :
+- **Sur un clone neuf, le bouton Google n'apparaît pas** : il faut un ID client OAuth dans `backend/.env` et `frontend/.env`, qui ne sont pas versionnés (voir `frontend/.env.example`).
+- **Notre application Google est en mode « Test »** : seuls les comptes Google ajoutés comme utilisateurs de test peuvent se connecter ; les autres voient la page « Accès bloqué » de Google.
+- Elle ne marche que sur `http://localhost:5173`.
 
 Si « Can't reach the server » : le backend ne tourne pas ou le port 4000 est pris
 (`netstat -ano | findstr :4000` puis `taskkill /PID <pid> /F`).
