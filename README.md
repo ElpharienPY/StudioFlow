@@ -22,4 +22,6 @@ Demo account, created by `npm run db:reset` in `backend/`: **`user1@studioflow.c
 ## Project plan
 See [docs/project-plan.md](docs/project-plan.md) for team task distribution, the milestone timeline and progress. Contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-We set up the repo organization (branching convention, DB schema, GitHub templates) with the help of Claude Code. We designed the UI mockups in `docs/` with the help of Claude Design, and used Claude Code to help with parts of the front-end code. The logo (`frontend/src/assets/studioflow-logo.png`) was generated with Nano Banana Pro to save time and quickly land on an art direction, which then drove the front-end's design tokens (see `frontend/README.md`).
+## Tools
+
+Alongside Vue.js, Node.js and MySQL, we used a few AI tools as assistants: Claude Design for the Milestone 1 mockups, Nano Banana Pro for the logo, and Claude Code as a coding assistant across the project, including for the Milestone 3 back-end, its tests and the front/back integration. The project idea, scope and features were defined by the team, and we remain responsible for all the code we submit.
