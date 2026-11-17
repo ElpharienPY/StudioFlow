@@ -378,6 +378,16 @@ const store = reactive({
     })
   },
 
+  // archive = soft delete (owner only): the project becomes read-only; unarchive brings it back
+  async setArchived(projectId, archived) {
+    return store.write(async () => {
+      const { project } = await api.post(`/projects/${projectId}/${archived ? 'archive' : 'unarchive'}`)
+      const index = store.projects.findIndex((p) => p.id === projectId)
+      if (index !== -1) store.projects[index] = project
+      return project
+    })
+  },
+
   // permanently deletes a project (owner only). The API wants it archived first, so we archive then delete.
   async deleteProject(projectId) {
     return store.write(async () => {

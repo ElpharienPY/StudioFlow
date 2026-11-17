@@ -16,7 +16,9 @@ const members = computed(() => (store.activeProjectId ? store.membersOf(store.ac
 const myRole = computed(() =>
   auth.currentUser && store.activeProjectId ? store.roleOf(store.activeProjectId, auth.currentUser.id) : null
 )
-const canManage = computed(() => myRole.value === 'owner')
+// an archived project is read-only for everyone, owners included (the API answers 409)
+const archived = computed(() => Boolean(store.activeProject?.archived_at))
+const canManage = computed(() => myRole.value === 'owner' && !archived.value)
 const ownerCount = computed(() => members.value.filter((m) => m.role === 'owner').length)
 
 function canRemove(member) {
@@ -53,6 +55,7 @@ async function leaveProject() {
       <h2>Invite a member</h2>
       <InviteMemberForm v-if="store.activeProjectId" :project-id="store.activeProjectId" />
     </section>
+    <p v-else-if="archived" class="viewer-note">This project is archived: the team can't be changed until an owner restores it.</p>
     <p v-else class="viewer-note">Only project owners can invite members or change roles.</p>
 
     <div class="members">
@@ -67,7 +70,7 @@ async function leaveProject() {
       />
     </div>
 
-    <section v-if="store.activeProject" class="leave">
+    <section v-if="store.activeProject && !archived" class="leave">
       <button type="button" class="leave-btn" @click="leaveProject">Leave project</button>
       <p v-if="myRole === 'owner' && ownerCount <= 1" class="leave-note">
         You are the only owner: make someone else an owner before leaving.

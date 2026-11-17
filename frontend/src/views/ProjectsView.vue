@@ -11,9 +11,9 @@ const store = useProjectsStore()
 const router = useRouter()
 const search = ref('')
 
-const filtered = computed(() =>
-  store.activeProjects.filter((p) => p.name.toLowerCase().includes(search.value.toLowerCase()))
-)
+const matches = (p) => p.name.toLowerCase().includes(search.value.toLowerCase())
+const filtered = computed(() => store.activeProjects.filter(matches))
+const filteredArchived = computed(() => store.archivedProjects.filter(matches))
 
 const creating = ref(false)
 const newName = ref('')
@@ -34,6 +34,16 @@ async function submitNewProject() {
     creating.value = false
     router.push('/deliverables')
   }
+}
+
+// archiving is reversible (the project becomes read-only); deleting is only offered once archived
+async function archiveProject(project) {
+  if (!window.confirm(`Archive "${project.name}"? It becomes read-only until you restore it.`)) return
+  await store.setArchived(project.id, true)
+}
+
+async function restoreProject(project) {
+  await store.setArchived(project.id, false)
 }
 
 async function removeProject(project) {
@@ -81,12 +91,12 @@ function openProject(projectId) {
             <button
               v-if="p.role === 'owner'"
               type="button"
-              class="delete-btn"
-              title="Delete project"
-              aria-label="Delete project"
-              @click.stop="removeProject(p)"
+              class="archive-btn"
+              title="Archive project"
+              aria-label="Archive project"
+              @click.stop="archiveProject(p)"
             >
-              🗑
+              🗄
             </button>
           </div>
         </div>
@@ -105,6 +115,21 @@ function openProject(projectId) {
         />
       </article>
     </div>
+
+    <section v-if="filteredArchived.length" class="archived">
+      <h2>Archived <span class="count">{{ filteredArchived.length }}</span></h2>
+      <p class="archived-note">Archived projects are read-only. Owners can restore them or delete them for good.</p>
+      <div v-for="p in filteredArchived" :key="p.id" class="archived-row" @click="openProject(p.id)">
+        <span class="archived-name">{{ p.name }}</span>
+        <span class="archived-role">{{ p.role }}</span>
+        <template v-if="p.role === 'owner'">
+          <button type="button" class="restore-btn" @click.stop="restoreProject(p)">Restore</button>
+          <button type="button" class="delete-btn" title="Delete permanently" aria-label="Delete permanently" @click.stop="removeProject(p)">
+            🗑
+          </button>
+        </template>
+      </div>
+    </section>
   </AppShell>
 </template>
 
@@ -262,6 +287,76 @@ h1 {
 .delete-btn:hover {
   border-color: #7f1d1d;
   background: rgba(248, 113, 113, 0.1);
+}
+
+.archive-btn {
+  background: transparent;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.archive-btn:hover {
+  border-color: var(--color-accent-500);
+}
+
+.archived {
+  margin-top: var(--space-6);
+}
+
+.archived h2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.archived-note {
+  margin: 4px 0 var(--space-3);
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.archived-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.archived-row:hover {
+  border-color: var(--color-accent-500);
+}
+
+.archived-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.archived-role {
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.restore-btn {
+  background: var(--color-surface-800);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-surface-50);
+  border-radius: var(--radius-md);
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.restore-btn:hover {
+  border-color: var(--color-accent-500);
 }
 
 .card-top {
