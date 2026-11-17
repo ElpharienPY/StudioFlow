@@ -91,7 +91,7 @@ back-end and the front-end wiring landed on `main` on Nov 16, 2026, commits
   task detail (assignees, stage, delete, comments), team management. Write
   actions are hidden from viewers.
 - **Tests**: 8 integration tests (`npm test` in `backend/`, Node's built-in
-  test runner, against the real database).
+  test runner, against a separate MySQL test database).
 
 **Available in the API but without a screen yet**
 

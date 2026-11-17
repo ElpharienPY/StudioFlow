@@ -1,10 +1,25 @@
-// Integration tests: real HTTP requests against the real app and the real MySQL database.
-// They create their own users/projects (random emails) and don't touch your seed data.
-//   npm test        (MySQL must be running and `npm run db:init` done)
+// Integration tests: real HTTP requests against the real app and a real MySQL database.
+// They run on a separate database (DB_NAME + "_test", or TEST_DB_NAME), recreated from
+// db/schema.sql at every run, so the demo data in DB_NAME is never touched.
+//   npm test        (MySQL must be running)
+import 'dotenv/config'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { test, after, before } from 'node:test'
 import assert from 'node:assert/strict'
 
+const testDb = process.env.TEST_DB_NAME ?? `${process.env.DB_NAME ?? 'studioflow'}_test`
+if (testDb === process.env.DB_NAME) throw new Error('TEST_DB_NAME must differ from DB_NAME (the tests recreate it).')
+process.env.DB_NAME = testDb // read by src/config/env.js below (dotenv never overrides it)
 process.env.AUTH_RATE_LIMIT_MAX = '10000' // many signups in one run
+
+// fresh schema in the test database (same script as `npm run db:init`)
+const initDb = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/init-db.js', import.meta.url))], {
+  env: process.env,
+  encoding: 'utf8',
+})
+if (initDb.status !== 0) throw new Error(`Could not create the test database "${testDb}":\n${initDb.stderr || initDb.stdout}`)
+
 const { app } = await import('../src/app.js')
 const { pool } = await import('../src/db/pool.js')
 

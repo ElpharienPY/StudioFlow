@@ -34,7 +34,7 @@ Shared code: `src/middleware` (auth, per-project access, errors, rate limit), `s
 | `npm run db:init` | drops & recreates all tables (**erases data**) |
 | `npm run db:seed` | empties the tables and loads demo data (**erases data**) |
 | `npm run db:reset` | both |
-| `npm test` | 8 integration tests against the real DB. They add their own users/projects to it, so run `npm run db:reset` afterwards to get the clean demo data back |
+| `npm test` | 8 integration tests against a real MySQL database. They use a separate database, `DB_NAME` + `_test` (or `TEST_DB_NAME`), recreated at every run, so the demo data is never touched |
 
 ## Conventions
 

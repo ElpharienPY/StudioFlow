@@ -54,7 +54,7 @@ once on their own machine.
 2. Make one commit per task, with a message following the convention above.
 3. Before pushing a code change, check that nothing is broken:
    ```bash
-   cd backend && npm test && npm run db:reset   # tests write to the demo database
+   cd backend && npm test   # uses its own test database, the demo data is left alone
    cd ../frontend && npm run build
    ```
 4. Re-read your commits (`git log -p origin/main..`), then `git push`.
