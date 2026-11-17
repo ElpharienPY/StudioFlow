@@ -70,9 +70,8 @@ one from scratch. All colors/spacing/radii live as CSS custom properties in
   (`GOOGLE_CLIENT_ID` in `src/constants.js`; public by design, overridable
   with `VITE_GOOGLE_CLIENT_ID`, an empty value hides the button). Google
   returns an ID token, which `auth.signInWithGoogle()` sends to
-  `POST /auth/google`. Our Google app is in "Testing" mode: only its
-  registered test users can sign in, other accounts get Google's
-  "Access blocked" page.
+  `POST /auth/google`. It works with any Google account, from
+  `http://localhost:5173` only (the authorized origin of our Google app).
 - **Roles**: `store.canEditProject(projectId)` (owner or editor, project not
   archived) decides whether write actions are shown; viewers can still
   comment. The back-end enforces the same rules in any case.

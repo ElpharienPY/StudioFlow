@@ -58,8 +58,7 @@ Shared code: `src/middleware` (auth, per-project access, errors, rate limit), `s
   secret is never used). The front sends the Google Identity Services `credential` (an ID token) to `POST /auth/google`;
   the API checks it with Google (signature, expiry, audience, issuer, verified email). The first Google sign-in is linked
   to the account with the same email, or creates one (`accounts` table). `GOOGLE_CLIENT_ID=` (empty) disables it (`501`).
-  **Our Google app is in "Testing" mode: only the Google accounts registered as test users can sign in**; others get
-  Google's "Access blocked" page. It only works from `http://localhost:5173`, the authorized JavaScript origin.
+  It works with any Google account, from `http://localhost:5173` only (the authorized JavaScript origin of our Google app).
 
 ## Roles
 

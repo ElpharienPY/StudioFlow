@@ -19,9 +19,9 @@
 
 ## Connexion Google (bonus) : à savoir
 
-Le bouton « Se connecter avec Google » fonctionne, avec une limite :
-- **Notre application Google est en mode « Test »** : seuls les comptes Google enregistrés comme utilisateurs de test peuvent se connecter. Les autres voient la page « Accès bloqué » de Google : c'est une restriction de Google, pas un bug. **Pour essayer l'application, utilise les comptes de démo ci-dessus.**
-- Elle ne marche que sur `http://localhost:5173` (pas `127.0.0.1`).
+Le bouton « Se connecter avec Google » fonctionne avec n'importe quel compte Google :
+- uniquement sur `http://localhost:5173` (pas `127.0.0.1`) ;
+- la première connexion Google crée un compte StudioFlow vide (ou rejoint le compte qui a le même e-mail) : pour voir l'application avec des données, utilise les comptes de démo ci-dessus.
 
 Si « Can't reach the server » : le backend ne tourne pas ou le port 4000 est pris
 (`netstat -ano | findstr :4000` puis `taskkill /PID <pid> /F`).

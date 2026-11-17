@@ -21,12 +21,11 @@ Demo account, created by `npm run db:reset` in `backend/`: **`user1@studioflow.c
 
 ### About "Sign in with Google" (bonus feature)
 
-The login page also has a **"Sign in with Google"** button. It works, with one limit:
+The login page also has a **"Sign in with Google"** button, which works with any Google account:
 
-- **Our Google app is in "Testing" mode**, so only the Google accounts we registered as test users can sign in. Any other Google account gets Google's **"Access blocked"** page: this is Google's restriction, not a bug in StudioFlow. **To try the app, use the demo accounts above.**
 - It only works on `http://localhost:5173` (not `127.0.0.1`), the origin registered for our Google app.
+- The first Google sign-in creates a new, empty StudioFlow account (or links to the existing account with the same email), so the demo accounts above are still the quickest way to see the app with data.
 - What StudioFlow stores, with or without Google: [PRIVACY.md](PRIVACY.md).
-- A test user's first Google sign-in creates a new, empty StudioFlow account (or links to the existing account with the same email).
 
 ## Project plan
 See [docs/project-plan.md](docs/project-plan.md) for team task distribution, the milestone timeline and progress. Contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).

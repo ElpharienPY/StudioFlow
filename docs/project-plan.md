@@ -72,8 +72,8 @@ back-end and the front-end wiring landed on `main` on Nov 16, 2026, commits
   bcrypt (cost 12); login/signup limited to 20 attempts per 15 min per IP.
   Members: invite by email, change role, remove, leave; a project always
   keeps at least one owner. Bonus: "Sign in with Google" (Google's button,
-  token checked by the API with Google); our Google app is in "Testing"
-  mode, so only its registered test users can use it.
+  token checked by the API with Google), for any Google account, from
+  `http://localhost:5173`.
 - **Projects & Deliverables**: projects (create, edit, archive/unarchive,
   delete once archived), deliverables (create, edit, delete, new revision
   round), assets as links with versions. A deliverable's stage is computed
