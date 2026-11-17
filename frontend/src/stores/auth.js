@@ -1,80 +1,81 @@
 import { reactive } from 'vue'
-import { users as seedUsers } from '../data/fixtures.js'
-
-const SESSION_KEY = 'studioflow.session'
+import { api, refreshSession, setAccessToken, setAuthLostHandler } from '../api.js'
+import { useProjectsStore } from './projects.js'
 
 // Plain Vue reactivity (no Pinia): a single module-level reactive object acts
 // as the store singleton. `get` accessors below are real JS getters — Vue's
 // reactive() proxy tracks the state they read, so they stay reactive just
 // like Pinia getters would.
+//
+// Auth is real now: the back-end gives a short-lived access token (kept in memory in api.js)
+// and an httpOnly refresh cookie. On page load `init()` tries to resume the session with it.
 const store = reactive({
-  users: [...seedUsers],
-  currentUserId: loadSession(),
+  currentUser: null,
 
   get isAuthenticated() {
-    return store.currentUserId !== null
+    return store.currentUser !== null
   },
-  get currentUser() {
-    return store.users.find((u) => u.id === store.currentUserId) ?? null
+  get currentUserId() {
+    return store.currentUser?.id ?? null
   },
 
-  // mock auth: no backend yet (Milestone 3) — password isn't actually checked
-  signIn(email, password) {
+  // resume the session from the refresh cookie (called once before the app is mounted)
+  async init() {
+    try {
+      const data = await refreshSession()
+      store.currentUser = data.user
+    } catch {
+      store.currentUser = null
+    }
+  },
+
+  async signIn(email, password) {
     if (!email || !password) return { ok: false, error: 'Email and password are required.' }
-    const user = store.users.find((u) => u.email.toLowerCase() === email.toLowerCase())
-    if (!user) return { ok: false, error: 'No account found for this email. Try signing up instead.' }
-    store.setSession(user.id)
-    return { ok: true }
+    return store.authenticate('/auth/login', { email, password })
   },
 
-  signUp(fullName, email, password) {
+  async signUp(fullName, email, password) {
     if (!fullName || !email || !password) return { ok: false, error: 'All fields are required.' }
     if (password.length < 8) return { ok: false, error: 'Password must be at least 8 characters.' }
-    if (store.users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-      return { ok: false, error: 'An account with this email already exists.' }
-    }
-    const user = {
-      id: Math.max(...store.users.map((u) => u.id)) + 1,
-      full_name: fullName,
-      email,
-      initials: initialsOf(fullName),
-      color: randomAccent(),
-    }
-    store.users.push(user)
-    store.setSession(user.id)
-    return { ok: true }
+    return store.authenticate('/auth/signup', { full_name: fullName, email, password })
   },
 
-  signOut() {
-    store.currentUserId = null
-    localStorage.removeItem(SESSION_KEY)
+  async authenticate(path, body) {
+    try {
+      const data = await api.publicPost(path, body)
+      setAccessToken(data.accessToken)
+      useProjectsStore().reset()
+      store.currentUser = data.user
+      return { ok: true }
+    } catch (err) {
+      return { ok: false, error: describe(err) }
+    }
   },
 
-  setSession(userId) {
-    store.currentUserId = userId
-    localStorage.setItem(SESSION_KEY, String(userId))
+  async signOut() {
+    try {
+      await api.post('/auth/logout')
+    } catch {
+      // even if the server can't be reached, forget the session locally
+    }
+    store.clearSession()
+  },
+
+  clearSession() {
+    setAccessToken(null)
+    store.currentUser = null
+    useProjectsStore().reset()
   },
 })
+
+setAuthLostHandler(() => store.clearSession())
 
 export function useAuthStore() {
   return store
 }
 
-function loadSession() {
-  const raw = localStorage.getItem(SESSION_KEY)
-  return raw ? Number(raw) : null
-}
-
-function initialsOf(fullName) {
-  return fullName
-    .trim()
-    .split(/\s+/)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .slice(0, 2)
-    .join('')
-}
-
-function randomAccent() {
-  const palette = ['#6366f1', '#10b981', '#a855f7', '#ec4899', '#06b6d4', '#f59e0b']
-  return palette[Math.floor(Math.random() * palette.length)]
+// field-level validation messages ("password: must be 8–72 characters") are more useful than "Validation failed"
+function describe(err) {
+  const details = err.details ? Object.values(err.details) : []
+  return details.length ? details.join(' ') : err.message
 }

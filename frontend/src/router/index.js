@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
+import { useProjectsStore } from '../stores/projects.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,10 +21,12 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
   if (!to.meta.public && !auth.isAuthenticated) return { name: 'login' }
   if (to.name === 'login' && auth.isAuthenticated) return { name: 'projects' }
+  // make sure the project list + active project content are loaded before showing a data view
+  if (auth.isAuthenticated && !to.meta.public) await useProjectsStore().ensureLoaded()
   return true
 })
 

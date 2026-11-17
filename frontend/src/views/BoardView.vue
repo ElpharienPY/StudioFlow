@@ -2,16 +2,20 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProjectsStore } from '../stores/projects.js'
+import { COLUMNS } from '../constants.js'
 import AppShell from '../components/layout/AppShell.vue'
 import AvatarStack from '../components/ui/AvatarStack.vue'
 import BoardColumn from '../components/boards/BoardColumn.vue'
+import NewDeliverableForm from '../components/deliverables/NewDeliverableForm.vue'
 import TaskDetailPanel from '../components/boards/TaskDetailPanel.vue'
 
 const store = useProjectsStore()
 const route = useRoute()
 
 const newTaskTitle = ref('')
+const newTaskStatus = ref('todo')
 const addingTask = ref(false)
+const addingDeliverable = ref(false)
 
 const deliverableOptions = computed(() =>
   store.activeProjectId ? store.deliverablesOf(store.activeProjectId) : []
@@ -21,9 +25,11 @@ const boardTasks = computed(() =>
   store.activeDeliverableId ? store.tasksOf(store.activeDeliverableId) : []
 )
 
-const todoTasks = computed(() => boardTasks.value.filter((t) => t.status === 'todo'))
-const doingTasks = computed(() => boardTasks.value.filter((t) => t.status === 'doing'))
-const doneTasks = computed(() => boardTasks.value.filter((t) => t.status === 'done'))
+// owner / editor of a project that isn't archived
+const canEdit = computed(() => store.activeProjectId !== null && store.canEditProject(store.activeProjectId))
+
+// one entry per kanban column with its tasks
+const columns = computed(() => COLUMNS.map((c) => ({ ...c, tasks: boardTasks.value.filter((t) => t.status === c.status) })))
 
 const openTask = computed(() => {
   const id = Number(route.params.taskId)
@@ -35,9 +41,10 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function submitNewTask() {
+async function submitNewTask() {
   if (!newTaskTitle.value.trim() || !store.activeDeliverableId) return
-  store.addTask(store.activeDeliverableId, newTaskTitle.value.trim())
+  const result = await store.addTask(store.activeDeliverableId, newTaskTitle.value.trim(), newTaskStatus.value)
+  if (!result.ok) return
   newTaskTitle.value = ''
   addingTask.value = false
 }
@@ -70,20 +77,46 @@ function submitNewTask() {
 
       <div class="actions">
         <AvatarStack v-if="store.activeProjectId" :users="store.membersOf(store.activeProjectId)" :size="28" />
-        <button type="button" class="add-task-btn" @click="addingTask = !addingTask">+ Add task</button>
+        <div v-if="canEdit" class="action-buttons">
+          <button type="button" class="secondary-btn" @click="addingDeliverable = !addingDeliverable">+ New deliverable</button>
+          <button v-if="store.activeDeliverableId" type="button" class="add-task-btn" @click="addingTask = !addingTask">+ Add task</button>
+        </div>
       </div>
     </header>
 
+    <p v-if="!store.activeProject" class="hint">
+      You are not in any project yet. <RouterLink to="/projects">Create or open a project</RouterLink> first.
+    </p>
+
+    <NewDeliverableForm
+      v-if="canEdit && (addingDeliverable || !store.activeDeliverableId)"
+      :project-id="store.activeProjectId"
+      @created="addingDeliverable = false"
+      @cancel="addingDeliverable = false"
+    />
+    <p v-else-if="store.activeProject && !store.activeDeliverableId" class="hint">
+      This project has no deliverable yet. Ask an owner or an editor to create one.
+    </p>
+
     <form v-if="addingTask" class="quick-add" @submit.prevent="submitNewTask">
-      <input v-model="newTaskTitle" type="text" placeholder="Task title" autofocus />
+      <input v-model="newTaskTitle" type="text" placeholder="Task title" maxlength="150" autofocus />
+      <select v-model="newTaskStatus" aria-label="Column">
+        <option v-for="c in COLUMNS" :key="c.status" :value="c.status">{{ c.title }}</option>
+      </select>
       <button type="submit">Add</button>
       <button type="button" class="cancel" @click="addingTask = false">Cancel</button>
     </form>
 
     <div class="columns">
-      <BoardColumn title="To Do" dot-color="#fbbf24" :tasks="todoTasks" />
-      <BoardColumn title="Doing" dot-color="#60a5fa" :tasks="doingTasks" />
-      <BoardColumn title="Done" dot-color="#34d399" :tasks="doneTasks" />
+      <BoardColumn
+        v-for="c in columns"
+        :key="c.status"
+        :title="c.title"
+        :dot-color="c.color"
+        :status="c.status"
+        :tasks="c.tasks"
+        :can-edit="canEdit && Boolean(store.activeDeliverableId)"
+      />
     </div>
 
     <TaskDetailPanel v-if="openTask" :task="openTask" />
@@ -148,6 +181,35 @@ h1 {
   align-items: center;
   justify-content: space-between;
   margin-top: var(--space-3);
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.secondary-btn {
+  background: var(--color-surface-800);
+  color: #cbd5e1;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hint {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-4);
+}
+
+.quick-add select {
+  background: var(--color-surface-900);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  color: var(--color-surface-50);
 }
 
 .add-task-btn {

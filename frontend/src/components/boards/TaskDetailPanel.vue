@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore, STAGE_ORDER } from '../../stores/projects.js'
 import { useAuthStore } from '../../stores/auth.js'
@@ -13,6 +13,14 @@ const store = useProjectsStore()
 const auth = useAuthStore()
 const router = useRouter()
 const commentBody = ref('')
+
+const projectId = computed(() => store.deliverables.find((d) => d.id === props.task.deliverable_id)?.project_id ?? null)
+const canEdit = computed(() => store.canEditProject(projectId.value))
+const assignees = computed(() => store.assigneesOf(props.task))
+// project members that can still be added to the task
+const available = computed(() =>
+  store.membersOf(projectId.value).filter((m) => !(props.task.assignee_ids ?? []).includes(m.id))
+)
 
 const STATUS_LABEL = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 const STATUS_DOT = { todo: '#fbbf24', doing: '#60a5fa', done: '#34d399' }
@@ -30,10 +38,30 @@ function formatTime(iso) {
   return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
-function submitComment() {
-  if (!commentBody.value.trim() || !auth.currentUser) return
-  store.addComment(props.task.id, auth.currentUser.id, commentBody.value.trim())
-  commentBody.value = ''
+// comments are fetched when a task is opened (the board only carries their count)
+watch(() => props.task.id, (id) => store.loadComments(id), { immediate: true })
+
+function addAssignee(event) {
+  const userId = Number(event.target.value)
+  event.target.value = ''
+  if (userId) store.assignMember(props.task.id, userId)
+}
+
+function moveTo(event) {
+  store.updateTaskStatus(props.task.id, event.target.value)
+}
+
+async function removeTask() {
+  if (!window.confirm(`Delete "${props.task.title}"? Its comments will be deleted too.`)) return
+  const result = await store.deleteTask(props.task.id)
+  if (result.ok) close()
+}
+
+async function submitComment() {
+  const body = commentBody.value.trim()
+  if (!body || !auth.currentUser) return
+  const result = await store.addComment(props.task.id, body)
+  if (result.ok) commentBody.value = ''
 }
 </script>
 
@@ -53,13 +81,36 @@ function submitComment() {
 
       <dl class="fields">
         <div class="field">
-          <dt>Assignee</dt>
+          <dt>Status</dt>
           <dd>
-            <template v-if="store.userById(task.assignee_id)">
-              <Avatar :user="store.userById(task.assignee_id)" :size="22" />
-              {{ store.userById(task.assignee_id).full_name }}
-            </template>
-            <template v-else>Unassigned</template>
+            <select v-if="canEdit" :value="task.status" @change="moveTo">
+              <option v-for="(label, value) in STATUS_LABEL" :key="value" :value="value">{{ label }}</option>
+            </select>
+            <template v-else>{{ STATUS_LABEL[task.status] }}</template>
+          </dd>
+        </div>
+        <div class="field">
+          <dt>Assignees</dt>
+          <dd class="assignees">
+            <span v-for="u in assignees" :key="u.id" class="chip">
+              <Avatar :user="u" :size="20" />
+              {{ u.full_name }}
+              <button
+                v-if="canEdit"
+                type="button"
+                class="chip-remove"
+                :title="`Remove ${u.full_name}`"
+                :aria-label="`Remove ${u.full_name}`"
+                @click="store.unassignMember(task.id, u.id)"
+              >
+                ✕
+              </button>
+            </span>
+            <span v-if="!assignees.length" class="muted">Unassigned</span>
+            <select v-if="canEdit && available.length" class="add-assignee" aria-label="Add an assignee" @change="addAssignee">
+              <option value="">+ Add a person</option>
+              <option v-for="m in available" :key="m.id" :value="m.id">{{ m.full_name }}</option>
+            </select>
           </dd>
         </div>
         <div class="field">
@@ -103,6 +154,8 @@ function submitComment() {
           <button type="submit">➤</button>
         </form>
       </section>
+
+      <button v-if="canEdit" type="button" class="delete-task" @click="removeTask">Delete task</button>
     </aside>
   </div>
 </template>
@@ -203,6 +256,53 @@ select {
   border-radius: var(--radius-md);
   padding: 4px 10px;
   font-size: 0.85rem;
+}
+
+dd.assignees {
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-surface-900);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  padding: 2px 6px 2px 4px;
+  font-size: 0.82rem;
+}
+
+.chip-remove {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 0 2px;
+}
+
+.chip-remove:hover {
+  color: #f87171;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.delete-task {
+  margin-top: var(--space-4);
+  background: transparent;
+  border: 1px solid #7f1d1d;
+  color: #f87171;
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.delete-task:hover {
+  background: rgba(248, 113, 113, 0.1);
 }
 
 h2 {

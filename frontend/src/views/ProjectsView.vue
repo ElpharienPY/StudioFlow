@@ -15,6 +15,33 @@ const filtered = computed(() =>
   store.activeProjects.filter((p) => p.name.toLowerCase().includes(search.value.toLowerCase()))
 )
 
+const creating = ref(false)
+const newName = ref('')
+const saving = ref(false)
+
+function startNewProject() {
+  newName.value = ''
+  creating.value = true
+}
+
+async function submitNewProject() {
+  const name = newName.value.trim()
+  if (!name || saving.value) return
+  saving.value = true
+  const result = await store.createProject(name)
+  saving.value = false
+  if (result.ok) {
+    creating.value = false
+    router.push('/deliverables')
+  }
+}
+
+async function removeProject(project) {
+  const ok = window.confirm(`Delete "${project.name}" permanently? Its deliverables, tasks, comments and assets will be lost.`)
+  if (!ok) return
+  await store.deleteProject(project.id)
+}
+
 function openProject(projectId) {
   store.setActiveProject(projectId)
   router.push('/deliverables')
@@ -30,6 +57,18 @@ function openProject(projectId) {
       </div>
       <div class="actions">
         <input v-model="search" type="search" placeholder="Search projects" class="search" />
+        <button type="button" class="new-btn" @click="startNewProject">+ New project</button>
+      </div>
+    </header>
+
+    <form v-if="creating" class="create-form" @submit.prevent="submitNewProject">
+      <input v-model="newName" type="text" placeholder="Project name" maxlength="150" autofocus required />
+      <button type="submit" :disabled="saving">{{ saving ? 'Creating…' : 'Create' }}</button>
+      <button type="button" class="cancel" @click="creating = false">Cancel</button>
+    </form>
+
+    <div class="grid">
+      <button type="button" class="new-card" @click="startNewProject">
         <button type="button" class="new-btn">+ New project</button>
       </div>
     </header>
@@ -43,6 +82,19 @@ function openProject(projectId) {
       <article v-for="p in filtered" :key="p.id" class="card" @click="openProject(p.id)">
         <div class="card-top">
           <span class="emoji">🎬</span>
+          <div class="card-top-right">
+            <StatusPill :status="p.health_status" :label="store.statusLabel(p.health_status)" />
+            <button
+              v-if="p.role === 'owner'"
+              type="button"
+              class="delete-btn"
+              title="Delete project"
+              aria-label="Delete project"
+              @click.stop="removeProject(p)"
+            >
+              🗑
+            </button>
+          </div>
           <StatusPill :status="p.health_status" :label="store.statusLabel(p.health_status)" />
         </div>
         <h2>{{ p.name }}</h2>
@@ -114,6 +166,37 @@ h1 {
   background: var(--color-accent-600);
 }
 
+.create-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.create-form input {
+  flex: 1;
+  max-width: 420px;
+  background: var(--color-surface-900);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  color: var(--color-surface-50);
+}
+
+.create-form button {
+  background: var(--color-accent-500);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.create-form .cancel {
+  background: transparent;
+  color: #94a3b8;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -165,6 +248,27 @@ h1 {
 
 .card:hover {
   border-color: var(--color-accent-500);
+}
+
+.card-top-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.delete-btn {
+  background: transparent;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  color: #f87171;
+}
+
+.delete-btn:hover {
+  border-color: #7f1d1d;
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .card-top {
