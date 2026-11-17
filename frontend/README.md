@@ -64,6 +64,12 @@ one from scratch. All colors/spacing/radii live as CSS custom properties in
   returned. A failed write puts its message in `store.error`, shown as a
   banner by `AppShell`. The only thing kept in `localStorage` is the id of
   the last opened project (`studioflow.activeProject`), a UI convenience.
+- **Google sign-in**: when `VITE_GOOGLE_CLIENT_ID` is set in `frontend/.env`
+  (see `.env.example`), the login page shows Google's official button
+  (`components/auth/GoogleSignInButton.vue`, Google Identity Services script
+  loaded on demand). Google returns an ID token, which `auth.signInWithGoogle()`
+  sends to `POST /auth/google`; the back-end needs the same id in
+  `GOOGLE_CLIENT_ID`. Without the variable the button is simply not shown.
 - **Roles**: `store.canEditProject(projectId)` (owner or editor, project not
   archived) decides whether write actions are shown; viewers can still
   comment. The back-end enforces the same rules in any case.

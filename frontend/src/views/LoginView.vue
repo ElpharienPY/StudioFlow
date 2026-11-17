@@ -3,6 +3,10 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
 import logo from '../assets/studioflow-logo.png'
+import GoogleSignInButton from '../components/auth/GoogleSignInButton.vue'
+
+// the Google button only shows up when an OAuth client id is configured (frontend/.env)
+const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -30,6 +34,19 @@ async function submit() {
     : await auth.signIn(email.value, password.value)
   loading.value = false
 
+  if (!result.ok) {
+    error.value = result.error
+    return
+  }
+  router.push('/')
+}
+
+async function googleSignIn(credential) {
+  if (loading.value) return
+  loading.value = true
+  error.value = ''
+  const result = await auth.signInWithGoogle(credential)
+  loading.value = false
   if (!result.ok) {
     error.value = result.error
     return
@@ -90,6 +107,11 @@ async function devSignIn() {
           {{ loading ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in' }}
         </button>
       </form>
+
+      <template v-if="googleEnabled">
+        <div class="divider"><span>or</span></div>
+        <GoogleSignInButton :text="isSignUp ? 'signup_with' : 'signin_with'" @credential="googleSignIn" />
+      </template>
 
       <p class="switch">
         <template v-if="isSignUp">
@@ -233,6 +255,23 @@ input:focus {
 
 .submit:hover {
   background: var(--color-accent-600);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: #64748b;
+  font-size: 0.8rem;
+  margin: var(--space-4) 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-subtle);
 }
 
 .switch {

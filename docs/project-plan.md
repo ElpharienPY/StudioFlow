@@ -71,8 +71,9 @@ back-end and the front-end wiring landed on `main` on Nov 16, 2026, commits
   rotated on every use and stored as a SHA-256 hash; passwords hashed with
   bcrypt (cost 12); login/signup limited to 20 attempts per 15 min per IP.
   Members: invite by email, change role, remove, leave; a project always
-  keeps at least one owner. `POST /auth/google` exists but only works with a
-  `GOOGLE_CLIENT_ID`, and the front-end has no Google button.
+  keeps at least one owner. Google sign-in ("Sign in with Google" button,
+  checked by the API with Google), enabled when an OAuth client id is set in
+  `backend/.env` and `frontend/.env`.
 - **Projects & Deliverables**: projects (create, edit, archive/unarchive,
   delete once archived), deliverables (create, edit, delete, new revision
   round), assets as links with versions. A deliverable's stage is computed

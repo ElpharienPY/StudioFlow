@@ -12,6 +12,7 @@ const testDb = process.env.TEST_DB_NAME ?? `${process.env.DB_NAME ?? 'studioflow
 if (testDb === process.env.DB_NAME) throw new Error('TEST_DB_NAME must differ from DB_NAME (the tests recreate it).')
 process.env.DB_NAME = testDb // read by src/config/env.js below (dotenv never overrides it)
 process.env.AUTH_RATE_LIMIT_MAX = '10000' // many signups in one run
+process.env.GOOGLE_CLIENT_ID = '' // the tests never call Google: /auth/google must answer 501 even if .env sets it
 
 // fresh schema in the test database (same script as `npm run db:init`)
 const initDb = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/init-db.js', import.meta.url))], {

@@ -40,6 +40,12 @@ const store = reactive({
     return store.authenticate('/auth/signup', { full_name: fullName, email, password })
   },
 
+  // `credential` is the ID token returned by the Google button; the API verifies it with Google
+  async signInWithGoogle(credential) {
+    if (!credential) return { ok: false, error: 'Google sign-in was cancelled.' }
+    return store.authenticate('/auth/google', { credential })
+  },
+
   async authenticate(path, body) {
     try {
       const data = await api.publicPost(path, body)

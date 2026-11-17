@@ -53,8 +53,12 @@ Shared code: `src/middleware` (auth, per-project access, errors, rate limit), `s
   Reusing an old one is rejected; reusing one long after rotation revokes every session of that user (token-theft signal).
 - The front must call the API with `credentials: 'include'` (CORS is already set up for `CORS_ORIGIN`).
 - Refresh tokens are stored hashed (sha-256), passwords with bcrypt (cost 12). Login/signup are rate limited (20 / 15 min / IP).
-- Google sign-in: set `GOOGLE_CLIENT_ID`, send the Google Identity Services `credential` to `POST /auth/google`.
-  Without the variable it answers `501`.
+- Google sign-in: set `GOOGLE_CLIENT_ID` (and the same id as `VITE_GOOGLE_CLIENT_ID` in `frontend/.env` to show the button).
+  The front sends the Google Identity Services `credential` (an ID token) to `POST /auth/google`; the API checks it with
+  Google (signature, expiry, audience, issuer, verified email). The first Google sign-in is linked to the account with the
+  same email, or creates one (`accounts` table). Without the variable the route answers `501`.
+  The OAuth client is a "Web application" with `http://localhost:5173` as authorized JavaScript origin; while the Google
+  app is in "Testing" mode, only the test users listed in Google Auth Platform > Audience can sign in.
 
 ## Roles
 
