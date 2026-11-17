@@ -12,10 +12,10 @@ const role = ref('editor')
 const error = ref('')
 const success = ref('')
 
-function submit() {
+async function submit() {
   error.value = ''
   success.value = ''
-  const result = store.inviteMember(props.projectId, email.value.trim(), role.value)
+  const result = await store.inviteMember(props.projectId, email.value.trim(), role.value)
   if (!result.ok) {
     error.value = result.error
     return

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../stores/projects.js'
 import { useAuthStore } from '../stores/auth.js'
 import AppShell from '../components/layout/AppShell.vue'
@@ -8,6 +9,7 @@ import InviteMemberForm from '../components/team/InviteMemberForm.vue'
 
 const store = useProjectsStore()
 const auth = useAuthStore()
+const router = useRouter()
 
 const members = computed(() => (store.activeProjectId ? store.membersOf(store.activeProjectId) : []))
 
@@ -25,8 +27,18 @@ function changeRole(userId, role) {
   store.updateMemberRole(store.activeProjectId, userId, role)
 }
 
-function remove(userId) {
-  store.removeMember(store.activeProjectId, userId)
+async function remove(userId) {
+  const isMe = userId === auth.currentUser?.id
+  const result = await store.removeMember(store.activeProjectId, userId, auth.currentUser?.id)
+  // I took myself off the project: it is gone from my list, go back to the project list
+  if (result.ok && isMe) router.push('/projects')
+}
+
+// any member can leave, whatever their role (the API refuses when I'm the last owner)
+async function leaveProject() {
+  if (!auth.currentUser || !store.activeProject) return
+  if (!window.confirm(`Leave "${store.activeProject.name}"? You will lose access to it and be removed from its tasks.`)) return
+  await remove(auth.currentUser.id)
 }
 </script>
 
@@ -54,6 +66,13 @@ function remove(userId) {
         @remove="remove(m.id)"
       />
     </div>
+
+    <section v-if="store.activeProject" class="leave">
+      <button type="button" class="leave-btn" @click="leaveProject">Leave project</button>
+      <p v-if="myRole === 'owner' && ownerCount <= 1" class="leave-note">
+        You are the only owner: make someone else an owner before leaving.
+      </p>
+    </section>
   </AppShell>
 </template>
 
@@ -101,5 +120,31 @@ h1 {
   flex-direction: column;
   gap: var(--space-2);
   max-width: 560px;
+}
+
+.leave {
+  margin-top: var(--space-6, 32px);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.leave-btn {
+  background: transparent;
+  border: 1px solid #7f1d1d;
+  color: #f87171;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.leave-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.leave-note {
+  margin: var(--space-2) 0 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
 }
 </style>

@@ -6,8 +6,8 @@ import Avatar from '../ui/Avatar.vue'
 const auth = useAuthStore()
 const router = useRouter()
 
-function logout() {
-  auth.signOut()
+async function logout() {
+  await auth.signOut()
   router.push('/login')
 }
 </script>

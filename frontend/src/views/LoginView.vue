@@ -12,6 +12,7 @@ const fullName = ref('')
 const email = ref('')
 const password = ref('')
 const error = ref('')
+const loading = ref(false)
 
 const isSignUp = computed(() => mode.value === 'signup')
 
@@ -20,10 +21,14 @@ function switchMode(next) {
   error.value = ''
 }
 
-function submit() {
+async function submit() {
+  if (loading.value) return
+  loading.value = true
+  error.value = ''
   const result = isSignUp.value
-    ? auth.signUp(fullName.value, email.value, password.value)
-    : auth.signIn(email.value, password.value)
+    ? await auth.signUp(fullName.value, email.value, password.value)
+    : await auth.signIn(email.value, password.value)
+  loading.value = false
 
   if (!result.ok) {
     error.value = result.error
@@ -34,8 +39,13 @@ function submit() {
 
 // dev-only shortcut to skip retyping credentials while iterating — stripped from prod builds
 const isDev = import.meta.env.DEV
-function devSignIn() {
-  auth.signIn('user1@studioflow.co', 'dev')
+async function devSignIn() {
+  // demo account created by `npm run db:seed` in the back-end
+  const result = await auth.signIn('user1@studioflow.co', 'password123')
+  if (!result.ok) {
+    error.value = result.error
+    return
+  }
   router.push('/')
 }
 </script>
@@ -79,7 +89,9 @@ function devSignIn() {
 
         <p v-if="error" class="error">{{ error }}</p>
 
-        <button type="submit" class="submit">{{ isSignUp ? 'Create account' : 'Sign in' }}</button>
+        <button type="submit" class="submit" :disabled="loading">
+          {{ loading ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in' }}
+        </button>
       </form>
 
       <div class="divider"><span>or</span></div>

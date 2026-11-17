@@ -5,6 +5,7 @@ import { useProjectsStore } from '../stores/projects.js'
 import AppShell from '../components/layout/AppShell.vue'
 import ProductionStepper from '../components/deliverables/ProductionStepper.vue'
 import AssetRow from '../components/deliverables/AssetRow.vue'
+import NewDeliverableForm from '../components/deliverables/NewDeliverableForm.vue'
 
 const store = useProjectsStore()
 const router = useRouter()
@@ -68,6 +69,11 @@ function openBoard() {
         <span class="revision">Revision round {{ deliverable.revision_round }}</span>
       </div>
     </header>
+
+    <NewDeliverableForm
+      v-if="!deliverable && store.activeProjectId && store.canEditProject(store.activeProjectId)"
+      :project-id="store.activeProjectId"
+    />
 
     <ProductionStepper v-if="stage" :current-stage="stage" class="section" />
 

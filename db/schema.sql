@@ -6,6 +6,7 @@ USE `studioflow`;
 
 DROP TABLE IF EXISTS `assets`;
 DROP TABLE IF EXISTS `comments`;
+DROP TABLE IF EXISTS `task_assignees`;
 DROP TABLE IF EXISTS `tasks`;
 DROP TABLE IF EXISTS `deliverables`;
 DROP TABLE IF EXISTS `project_members`;
@@ -126,8 +127,6 @@ CREATE TABLE `deliverables` (
 CREATE TABLE `tasks` (
   `id`             INT          NOT NULL AUTO_INCREMENT,
   `deliverable_id` INT          NOT NULL,
-  -- null = nobody assigned yet
-  `assignee_id`    INT          NULL,
   `title`          VARCHAR(150) NOT NULL,
   `description`    TEXT         NULL,
   `status`         ENUM('todo','doing','done') NOT NULL DEFAULT 'todo',
@@ -140,14 +139,26 @@ CREATE TABLE `tasks` (
                    ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_tasks_board` (`deliverable_id`, `status`, `position`),
-  KEY `idx_tasks_assignee` (`assignee_id`),
   KEY `idx_tasks_due_date` (`due_date`),
   CONSTRAINT `fk_tasks_deliverable`
     FOREIGN KEY (`deliverable_id`) REFERENCES `deliverables` (`id`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- who works on a task: zero, one or several people (all of them must be members of the project)
+CREATE TABLE `task_assignees` (
+  `task_id`     INT      NOT NULL,
+  `user_id`     INT      NOT NULL,
+  `assigned_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`task_id`, `user_id`),
+  KEY `idx_task_assignees_user` (`user_id`),
+  CONSTRAINT `fk_task_assignees_task`
+    FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`)
     ON DELETE CASCADE,
-  CONSTRAINT `fk_tasks_assignee`
-    FOREIGN KEY (`assignee_id`) REFERENCES `users` (`id`)
-    ON DELETE SET NULL
+  CONSTRAINT `fk_task_assignees_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

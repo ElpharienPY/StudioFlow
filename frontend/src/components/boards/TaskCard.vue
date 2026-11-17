@@ -1,10 +1,11 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../../stores/projects.js'
-import Avatar from '../ui/Avatar.vue'
+import AvatarStack from '../ui/AvatarStack.vue'
 
 const props = defineProps({
   task: { type: Object, required: true },
+  movable: { type: Boolean, default: false }, // can be dragged to another column
 })
 
 const store = useProjectsStore()
@@ -14,6 +15,11 @@ function openTask() {
   router.push(`/boards/${props.task.id}`)
 }
 
+function onDragStart(event) {
+  event.dataTransfer.setData('text/plain', String(props.task.id))
+  event.dataTransfer.effectAllowed = 'move'
+}
+
 function formatDate(iso) {
   if (!iso) return null
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -21,17 +27,25 @@ function formatDate(iso) {
 </script>
 
 <template>
-  <button type="button" class="task-card" @click="openTask">
+  <div
+    class="task-card"
+    role="button"
+    tabindex="0"
+    :draggable="movable"
+    @dragstart="onDragStart"
+    @click="openTask"
+    @keydown.enter="openTask"
+  >
     <h3>{{ task.title }}</h3>
     <div class="meta">
       <span v-if="task.stage" class="stage">{{ task.stage }}</span>
-      <span class="comments" v-if="store.commentsOf(task.id).length">💬 {{ store.commentsOf(task.id).length }}</span>
+      <span class="comments" v-if="task.comment_count">💬 {{ task.comment_count }}</span>
     </div>
     <div class="bottom">
       <span class="due">{{ formatDate(task.due_date) }}</span>
-      <Avatar v-if="store.userById(task.assignee_id)" :user="store.userById(task.assignee_id)" :size="22" />
+      <AvatarStack :users="store.assigneesOf(task)" :size="22" />
     </div>
-  </button>
+  </div>
 </template>
 
 <style scoped>
@@ -47,6 +61,7 @@ function formatDate(iso) {
   padding: var(--space-3);
   cursor: pointer;
   color: var(--color-surface-50);
+  font: inherit;
 }
 
 .task-card:hover {
