@@ -86,19 +86,19 @@ back-end and the front-end wiring landed on `main` on Nov 16, 2026, commits
 - **Database**: 10 tables in `db/schema.sql`; `npm run db:reset` loads the
   demo data.
 - **Front-end wired to the API** (`frontend/src/api.js` and the stores):
-  sign in / sign up, session kept across reloads, projects dashboard (create,
-  delete), deliverables (create), kanban with drag & drop and status menu,
-  task detail (assignees, stage, delete, comments), team management. Write
-  actions are hidden from viewers.
+  sign in / sign up, session kept across reloads, sign out of all devices,
+  projects dashboard (create, archive, restore, delete once archived),
+  deliverables (create), assets (add as a link, delete), kanban with drag &
+  drop and status menu, task detail (title, description, due date, stage,
+  assignees, delete, comments with deletion by the author or an owner), team
+  management. Write actions are hidden from viewers and on archived projects.
 - **Tests**: 8 integration tests (`npm test` in `backend/`, Node's built-in
   test runner, against a separate MySQL test database).
 
 **Available in the API but without a screen yet**
 
-Adding/editing/deleting assets, task due date, title and description edits,
-archive/unarchive (the delete button archives then deletes), editing a
-project or its health status, editing/deleting a deliverable, new revision
-round, deleting a comment, sign out of every device.
+Editing a project or its health status, editing/deleting a deliverable,
+starting a new revision round, editing an asset.
 
 **Remaining for Dec 14, 2026**
 
