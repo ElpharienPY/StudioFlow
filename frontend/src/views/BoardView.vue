@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProjectsStore } from '../stores/projects.js'
 import { COLUMNS } from '../constants.js'
+import { formatDay } from '../dates.js'
 import AppShell from '../components/layout/AppShell.vue'
 import AvatarStack from '../components/ui/AvatarStack.vue'
 import BoardColumn from '../components/boards/BoardColumn.vue'
@@ -36,10 +37,7 @@ const openTask = computed(() => {
   return id ? store.taskById(id) : null
 })
 
-function formatDate(dateStr) {
-  if (!dateStr) return null
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+const formatDate = (day) => formatDay(day, { withYear: true })
 
 async function submitNewTask() {
   if (!newTaskTitle.value.trim() || !store.activeDeliverableId) return

@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../../stores/projects.js'
 import AvatarStack from '../ui/AvatarStack.vue'
+import { formatDay } from '../../dates.js'
 
 const props = defineProps({
   task: { type: Object, required: true },
@@ -20,10 +21,7 @@ function onDragStart(event) {
   event.dataTransfer.effectAllowed = 'move'
 }
 
-function formatDate(iso) {
-  if (!iso) return null
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
+const formatDate = (day) => formatDay(day)
 </script>
 
 <template>

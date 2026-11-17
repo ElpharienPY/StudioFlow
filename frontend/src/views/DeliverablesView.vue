@@ -6,6 +6,7 @@ import AppShell from '../components/layout/AppShell.vue'
 import ProductionStepper from '../components/deliverables/ProductionStepper.vue'
 import AssetRow from '../components/deliverables/AssetRow.vue'
 import NewDeliverableForm from '../components/deliverables/NewDeliverableForm.vue'
+import { formatDay } from '../dates.js'
 
 const store = useProjectsStore()
 const router = useRouter()
@@ -35,10 +36,7 @@ const overallProgress = computed(() => {
   return total ? Math.round((100 * taskSummary.value.done) / total) : 0
 })
 
-function formatDate(dateStr) {
-  if (!dateStr) return null
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+const formatDate = (day) => formatDay(day, { withYear: true })
 
 function openBoard() {
   router.push('/boards')

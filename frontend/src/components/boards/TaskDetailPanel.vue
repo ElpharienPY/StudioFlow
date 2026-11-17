@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useProjectsStore, STAGE_ORDER } from '../../stores/projects.js'
 import { useAuthStore } from '../../stores/auth.js'
 import Avatar from '../ui/Avatar.vue'
+import { formatDay } from '../../dates.js'
 
 const props = defineProps({
   task: { type: Object, required: true },
@@ -29,10 +30,7 @@ function close() {
   router.push('/boards')
 }
 
-function formatDate(iso) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-}
+const formatDate = (day) => formatDay(day, { withYear: true }) ?? '—'
 
 function formatTime(iso) {
   return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
