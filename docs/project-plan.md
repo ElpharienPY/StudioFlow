@@ -12,9 +12,6 @@ their vertical end to end, from front-end (Milestone 2) to back-end
 | **Théodore** | Boards & Tasks | Kanban (To Do/Doing/Done columns), task detail, comments | `tasks`, `task_assignees`, `comments` |
 | **Guillaume** | Projects & Deliverables | Projects dashboard, deliverable view (production stepper, assets) | `projects`, `deliverables`, `assets` |
 
-*Théodore/Guillaume split still to be confirmed between them — both verticals
-are interchangeable.*
-
 ## Timeline
 
 | Step | Target date | Content |
@@ -114,4 +111,4 @@ starting a new revision round, editing an asset.
 
 - Final Milestone 3 write-up: [docs/StudioFlow — Milestone 3.docx](StudioFlow — Milestone 3.docx)
   (screenshots in `docs/screenshots/milestone-3/`) — done.
-- Presentation (5–7 min) — TODO.
+- Presentation (5–7 min) — scheduled for the Milestone 3 deadline (Dec 14, 2026).
