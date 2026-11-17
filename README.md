@@ -25,6 +25,7 @@ The login page also has a **"Sign in with Google"** button. It works, with one l
 
 - **Our Google app is in "Testing" mode**, so only the Google accounts we registered as test users can sign in. Any other Google account gets Google's **"Access blocked"** page: this is Google's restriction, not a bug in StudioFlow. **To try the app, use the demo accounts above.**
 - It only works on `http://localhost:5173` (not `127.0.0.1`), the origin registered for our Google app.
+- What StudioFlow stores, with or without Google: [PRIVACY.md](PRIVACY.md).
 - A test user's first Google sign-in creates a new, empty StudioFlow account (or links to the existing account with the same email).
 
 ## Project plan
