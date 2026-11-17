@@ -4,9 +4,10 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
 import logo from '../assets/studioflow-logo.png'
 import GoogleSignInButton from '../components/auth/GoogleSignInButton.vue'
+import { GOOGLE_CLIENT_ID } from '../constants.js'
 
-// the Google button only shows up when an OAuth client id is configured (frontend/.env)
-const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
+// shown unless VITE_GOOGLE_CLIENT_ID is set to an empty value (see constants.js)
+const googleEnabled = Boolean(GOOGLE_CLIENT_ID)
 
 const router = useRouter()
 const auth = useAuthStore()

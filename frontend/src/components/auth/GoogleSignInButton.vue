@@ -1,15 +1,15 @@
 <script setup>
 // Official "Sign in with Google" button (Google Identity Services). Google returns an ID token
 // ("credential") that we emit; the back-end verifies it (POST /auth/google) and opens a session.
-// Rendered only when VITE_GOOGLE_CLIENT_ID is set (see frontend/README.md).
+// Uses GOOGLE_CLIENT_ID from constants.js (see frontend/README.md).
 import { ref, onMounted, watch } from 'vue'
+import { GOOGLE_CLIENT_ID as CLIENT_ID } from '../../constants.js'
 
 const props = defineProps({
   text: { type: String, default: 'signin_with' }, // 'signin_with' | 'signup_with'
 })
 const emit = defineEmits(['credential'])
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 const container = ref(null)
 const failed = ref(false)
 

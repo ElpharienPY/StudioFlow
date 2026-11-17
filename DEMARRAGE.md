@@ -17,12 +17,11 @@
    ```
 4. Ouvre **http://localhost:5173** (pas 127.0.0.1) et connecte-toi : `user1@studioflow.co` / `password123`.
 
-## Connexion Google : à savoir
+## Connexion Google (bonus) : à savoir
 
-Pour essayer l'application, utilise les comptes de démo ci-dessus, pas Google :
-- **Sur un clone neuf, le bouton Google n'apparaît pas** : il faut un ID client OAuth dans `backend/.env` et `frontend/.env`, qui ne sont pas versionnés (voir `frontend/.env.example`).
-- **Notre application Google est en mode « Test »** : seuls les comptes Google ajoutés comme utilisateurs de test peuvent se connecter ; les autres voient la page « Accès bloqué » de Google.
-- Elle ne marche que sur `http://localhost:5173`.
+Le bouton « Se connecter avec Google » fonctionne, avec une limite :
+- **Notre application Google est en mode « Test »** : seuls les comptes Google enregistrés comme utilisateurs de test peuvent se connecter. Les autres voient la page « Accès bloqué » de Google : c'est une restriction de Google, pas un bug. **Pour essayer l'application, utilise les comptes de démo ci-dessus.**
+- Elle ne marche que sur `http://localhost:5173` (pas `127.0.0.1`).
 
 Si « Can't reach the server » : le backend ne tourne pas ou le port 4000 est pris
 (`netstat -ano | findstr :4000` puis `taskkill /PID <pid> /F`).

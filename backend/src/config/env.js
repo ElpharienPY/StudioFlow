@@ -22,8 +22,11 @@ export const env = {
   REFRESH_TOKEN_TTL_DAYS: Number(process.env.REFRESH_TOKEN_TTL_DAYS ?? 30),
   // comma-separated list allowed, e.g. "http://localhost:5173,https://studioflow.app"
   CORS_ORIGIN: (process.env.CORS_ORIGIN ?? 'http://localhost:5173').split(',').map((s) => s.trim()),
-  // optional: enables POST /auth/google (OAuth client id from Google Cloud console)
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? '',
+  // POST /auth/google accepts ID tokens issued for this OAuth client id (our Google app by default;
+  // a client id is public, the client secret is never needed). Set it to an empty value to disable
+  // Google sign-in (the route then answers 501). Must match the front-end's GOOGLE_CLIENT_ID.
+  GOOGLE_CLIENT_ID:
+    process.env.GOOGLE_CLIENT_ID ?? '872128360491-0cu0ql4s6uthfq2hbanuf5c7cfnugdqe.apps.googleusercontent.com',
   // max login/signup attempts per IP per 15 min (raise it in tests)
   AUTH_RATE_LIMIT_MAX: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 20),
 }

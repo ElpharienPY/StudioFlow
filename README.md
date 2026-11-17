@@ -19,13 +19,13 @@ A team creates **projects**, splits each one into **deliverables** (a trailer, a
 
 Demo account, created by `npm run db:reset` in `backend/`: **`user1@studioflow.co` / `password123`**. Users `user1` to `user6@studioflow.co` share that password (`user4` is a viewer on "Summer Campaign 2026"). **Use these accounts to try the app.**
 
-### About "Sign in with Google"
+### About "Sign in with Google" (bonus feature)
 
-Google sign-in works, but only in our own setup, so it is not the way to try the app:
+The login page also has a **"Sign in with Google"** button. It works, with one limit:
 
-- **On a fresh clone the Google button is hidden.** It needs an OAuth client id in `backend/.env` and `frontend/.env`, which are not committed. To enable it, create your own OAuth client ("Web application", authorized JavaScript origin `http://localhost:5173`) and follow `frontend/.env.example`.
-- **Our Google app is in "Testing" mode.** During our demo, only the Google accounts we registered as test users can sign in; any other account gets Google's "Access blocked" page.
-- It only works on `http://localhost:5173` (not `127.0.0.1`).
+- **Our Google app is in "Testing" mode**, so only the Google accounts we registered as test users can sign in. Any other Google account gets Google's **"Access blocked"** page: this is Google's restriction, not a bug in StudioFlow. **To try the app, use the demo accounts above.**
+- It only works on `http://localhost:5173` (not `127.0.0.1`), the origin registered for our Google app.
+- A test user's first Google sign-in creates a new, empty StudioFlow account (or links to the existing account with the same email).
 
 ## Project plan
 See [docs/project-plan.md](docs/project-plan.md) for team task distribution, the milestone timeline and progress. Contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
