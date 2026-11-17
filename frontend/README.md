@@ -27,15 +27,11 @@ mock data shaped like our real schema — the actual API lands in Milestone 3.
 
 We first reached for Tailwind CSS — it's a fast fit for the mockups' custom
 dark design system (lots of small variant states: status pills, a stepper,
-avatar stacks). But our professor teaches a Tailwind course on
-good4college.com, and we couldn't confirm our setup would match those
-conventions — the lesson page is client-rendered and gated, so it wasn't
-fetchable to check. Rather than risk contradicting something specifically
-taught in class, we switched to plain CSS: one `<style scoped>` block per
-`.vue` component, with design tokens as CSS custom properties in
-`src/style.css`. That also has a real upside for the team — Théodore and
-Guillaume inherit these files without first needing to learn a utility-class
-framework, and there's one less dependency in the build.
+avatar stacks). We switched to plain CSS instead: one `<style scoped>` block
+per `.vue` component, with design tokens as CSS custom properties in
+`src/style.css`. That keeps the setup simple for the whole team — no one
+needs to learn a utility-class framework first — and there's one less
+dependency in the build.
 
 ## Design direction
 

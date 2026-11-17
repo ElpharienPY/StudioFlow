@@ -1,6 +1,16 @@
 import { reactive } from 'vue'
 import { api } from '../api.js'
 import { STAGE_ORDER } from '../constants.js'
+import {
+  projects as seedProjects,
+  projectMembers as seedProjectMembers,
+  deliverables as seedDeliverables,
+  tasks as seedTasks,
+  comments as seedComments,
+  assets as seedAssets,
+  users as seedUsers,
+  STAGE_ORDER,
+} from '../data/fixtures.js'
 
 const STATUS_LABEL = {
   kickoff: 'Kickoff',
@@ -30,6 +40,18 @@ const store = reactive({
   activeDeliverableId: null,
   loading: false,
   error: '', // last failed write, shown by AppShell
+const store = reactive({
+  projects: [...seedProjects],
+  projectMembers: [...seedProjectMembers],
+  deliverables: [...seedDeliverables],
+  tasks: [...seedTasks],
+  comments: [...seedComments],
+  assets: [...seedAssets],
+  users: [...seedUsers],
+  activeProjectId: seedProjects.find((p) => !p.archived_at)?.id ?? null,
+  activeDeliverableId: seedDeliverables.find((d) => d.project_id === seedProjects[0]?.id)?.id ?? null,
+  nextTaskId: Math.max(...seedTasks.map((t) => t.id)) + 1,
+  nextCommentId: Math.max(...seedComments.map((c) => c.id)) + 1,
 
   get activeProjects() {
     return store.projects.filter((p) => !p.archived_at)
@@ -54,6 +76,9 @@ const store = reactive({
 
   membersOf(projectId) {
     return store.projects.find((p) => p.id === projectId)?.members ?? []
+    return store.projectMembers
+      .filter((pm) => pm.project_id === projectId)
+      .map((pm) => ({ ...store.users.find((u) => u.id === pm.user_id), role: pm.role }))
   },
 
   deliverablesOf(projectId) {
@@ -94,6 +119,15 @@ const store = reactive({
   // tasks' status drives the counts (computed by the API); stage drives the production stepper (see deliverableStage)
   projectProgress(projectId) {
     return store.projects.find((p) => p.id === projectId)?.progress ?? { done: 0, total: 0 }
+    return store.projectMembers.find((pm) => pm.project_id === projectId && pm.user_id === userId)?.role ?? null
+  },
+
+  // tasks' status drives the counts; stage drives the production stepper (see deliverableStage)
+  projectProgress(projectId) {
+    const deliverableIds = store.deliverables.filter((d) => d.project_id === projectId).map((d) => d.id)
+    const projectTasks = store.tasks.filter((t) => deliverableIds.includes(t.deliverable_id))
+    const done = projectTasks.filter((t) => t.status === 'done').length
+    return { done, total: projectTasks.length }
   },
 
   // a deliverable's current stage is derived from its tasks, not stored (see db/schema.sql)
@@ -210,6 +244,9 @@ const store = reactive({
       // not critical
     }
     store.loadProject(projectId).catch((err) => (store.error = err.message))
+  setActiveProject(projectId) {
+    store.activeProjectId = projectId
+    store.activeDeliverableId = store.deliverables.find((d) => d.project_id === projectId)?.id ?? null
   },
 
   setActiveDeliverable(deliverableId) {
@@ -388,6 +425,56 @@ const store = reactive({
 })
 
 let loadedOnce = null
+
+  addTask(deliverableId, title) {
+    const columnTasks = store.tasks.filter((t) => t.deliverable_id === deliverableId && t.status === 'todo')
+    store.tasks.push({
+      id: store.nextTaskId++,
+      deliverable_id: deliverableId,
+      assignee_id: null,
+      title,
+      description: '',
+      status: 'todo',
+      stage: null,
+      due_date: null,
+      position: columnTasks.length,
+    })
+  },
+
+  updateTaskStage(taskId, stage) {
+    const task = store.tasks.find((t) => t.id === taskId)
+    if (task) task.stage = stage
+  },
+
+  updateTaskStatus(taskId, status) {
+    const task = store.tasks.find((t) => t.id === taskId)
+    if (task) task.status = status
+  },
+
+  addComment(taskId, authorId, body) {
+    store.comments.push({ id: store.nextCommentId++, task_id: taskId, author_id: authorId, body, created_at: new Date().toISOString() })
+  },
+
+  inviteMember(projectId, email, role) {
+    const user = store.users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+    if (!user) return { ok: false, error: 'No account with this email yet — they need to sign up first.' }
+    if (store.projectMembers.some((pm) => pm.project_id === projectId && pm.user_id === user.id)) {
+      return { ok: false, error: `${user.full_name} is already a member of this project.` }
+    }
+    store.projectMembers.push({ project_id: projectId, user_id: user.id, role, joined_at: new Date().toISOString() })
+    return { ok: true }
+  },
+
+  updateMemberRole(projectId, userId, role) {
+    const pm = store.projectMembers.find((m) => m.project_id === projectId && m.user_id === userId)
+    if (pm) pm.role = role
+  },
+
+  removeMember(projectId, userId) {
+    const index = store.projectMembers.findIndex((pm) => pm.project_id === projectId && pm.user_id === userId)
+    if (index !== -1) store.projectMembers.splice(index, 1)
+  },
+})
 
 export function useProjectsStore() {
   return store
