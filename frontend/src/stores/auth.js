@@ -61,6 +61,17 @@ const store = reactive({
     store.clearSession()
   },
 
+  // revokes every session of this account (all devices / browsers), then this one locally
+  async signOutEverywhere() {
+    try {
+      await api.post('/auth/logout-all')
+    } catch (err) {
+      return { ok: false, error: describe(err) }
+    }
+    store.clearSession()
+    return { ok: true }
+  },
+
   clearSession() {
     setAccessToken(null)
     store.currentUser = null
