@@ -21,8 +21,10 @@ const DUMMY_HASH = await bcrypt.hash('studioflow-dummy-password', BCRYPT_COST)
 
 const limiter = rateLimit({ max: env.AUTH_RATE_LIMIT_MAX })
 
-const nonEmpty = (v) => {
-  if (typeof v !== 'string' || v.length === 0 || v.length > 200) throw new Error('must be a non-empty string')
+// a non-empty string of at most `max` characters, kept as is (no trim: passwords and tokens are exact)
+const nonEmpty = (max) => (v) => {
+  if (typeof v !== 'string' || v.length === 0) throw new Error('must be a non-empty string')
+  if (v.length > max) throw new Error(`must be at most ${max} characters`)
   return v
 }
 
@@ -56,7 +58,7 @@ authRouter.post('/signup', limiter, async (req, res) => {
 
 // POST /auth/login  { email, password }
 authRouter.post('/login', limiter, async (req, res) => {
-  const body = parseBody(req.body, { email: rules.email(), password: nonEmpty })
+  const body = parseBody(req.body, { email: rules.email(), password: nonEmpty(200) })
   const [rows] = await pool.execute('SELECT id, full_name, email, password_hash FROM users WHERE email = ?', [body.email])
   const user = rows[0]
 
@@ -69,7 +71,8 @@ authRouter.post('/login', limiter, async (req, res) => {
 
 // POST /auth/google  { credential }   (the ID token from Google Identity Services)
 authRouter.post('/google', limiter, async (req, res) => {
-  const body = parseBody(req.body, { credential: nonEmpty })
+  // a Google ID token is a JWT of ~1,000 characters
+  const body = parseBody(req.body, { credential: nonEmpty(4096) })
   const google = await verifyGoogleIdToken(body.credential)
 
   const user = await withTransaction(async (conn) => {

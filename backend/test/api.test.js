@@ -136,6 +136,9 @@ test('auth: refresh rotates the token; old one is rejected; logout revokes', asy
 test('google sign-in is a clean 501 when not configured', async () => {
   const r = await call(null, 'POST', '/auth/google', { credential: 'x' })
   assert.equal(r.status, 501)
+  // a real Google ID token is ~1,000 characters: it must pass validation (and reach the 501)
+  assert.equal((await call(null, 'POST', '/auth/google', { credential: 'x'.repeat(1200) })).status, 501)
+  assert.equal((await call(null, 'POST', '/auth/google', { credential: '' })).status, 400)
 })
 
 test('projects: create, list, update, roles and permissions', async () => {
