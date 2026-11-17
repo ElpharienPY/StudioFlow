@@ -69,12 +69,6 @@ function openProject(projectId) {
 
     <div class="grid">
       <button type="button" class="new-card" @click="startNewProject">
-        <button type="button" class="new-btn">+ New project</button>
-      </div>
-    </header>
-
-    <div class="grid">
-      <button type="button" class="new-card">
         <span class="plus">+</span>
         <span>New project</span>
       </button>
@@ -95,7 +89,6 @@ function openProject(projectId) {
               🗑
             </button>
           </div>
-          <StatusPill :status="p.health_status" :label="store.statusLabel(p.health_status)" />
         </div>
         <h2>{{ p.name }}</h2>
         <p class="description">{{ p.description }}</p>
