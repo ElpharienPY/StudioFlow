@@ -80,10 +80,7 @@ async function devSignIn() {
         </label>
 
         <label class="field">
-          <div class="field-label-row">
-            <span>Password</span>
-            <a v-if="!isSignUp" href="#" class="forgot" @click.prevent>Forgot?</a>
-          </div>
+          <span>Password</span>
           <input v-model="password" type="password" placeholder="••••••••••••" autocomplete="current-password" />
         </label>
 
@@ -93,17 +90,6 @@ async function devSignIn() {
           {{ loading ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in' }}
         </button>
       </form>
-
-      <div class="divider"><span>or</span></div>
-
-      <button
-        type="button"
-        class="google"
-        disabled
-        title="Google sign-in ships with the real backend in Milestone 3"
-      >
-        <span class="google-icon">G</span> Continue with Google
-      </button>
 
       <p class="switch">
         <template v-if="isSignUp">
@@ -214,16 +200,6 @@ h1 {
   font-size: 0.85rem;
 }
 
-.field-label-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.forgot {
-  color: var(--color-accent-400);
-  text-decoration: none;
-}
-
 input {
   background: var(--color-surface-950);
   border: 1px solid var(--color-border-subtle);
@@ -257,43 +233,6 @@ input:focus {
 
 .submit:hover {
   background: var(--color-accent-600);
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: #64748b;
-  font-size: 0.8rem;
-  margin: var(--space-4) 0;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--color-border-subtle);
-}
-
-.google {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  background: transparent;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-  padding: 10px;
-  color: var(--color-surface-50);
-  font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.google-icon {
-  font-weight: 700;
 }
 
 .switch {
