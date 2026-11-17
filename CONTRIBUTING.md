@@ -1,75 +1,70 @@
-# Contributing Guide — StudioFlow
+# Guide de contribution — StudioFlow
 
-This guide is maintained with the help of Claude Code, which also drives the
-day-to-day development workflow on this repo — scaffolding, implementation,
-and git operations are done through Claude Code, with the conventions below
-enforced on every step (branch naming, commit format, no direct push to
-`main`) so development stays consistent and these guidelines are actually
-respected rather than drifting over time.
+Ce dépôt sert aussi de preuve de participation pour la notation du projet.
+Chaque membre doit committer **depuis son propre compte GitHub** — pas de
+commits groupés sous un seul compte, pas de co-écriture qui masquerait qui a
+fait quoi.
 
-This repository also serves as proof of participation for grading. Each member
-must commit **from their own GitHub account** — no squashed commits under a
-single account, no co-authoring that would hide who did what.
+## Convention de branches
 
-## Branching convention
+- `main` : branche toujours fonctionnelle. **Jamais de push direct.**
+  Toute modification passe par une Pull Request.
+- `feat/<nom-court>` : nouvelle fonctionnalité
+- `fix/<nom-court>` : correction de bug
+- `docs/<nom-court>` : documentation uniquement
 
-- `main`: always working branch. **Never push directly.** Every change goes
-  through a Pull Request.
-- `feat/<short-name>`: new feature
-- `fix/<short-name>`: bug fix
-- `docs/<short-name>`: documentation only
-
-One branch = one task. Examples: `feat/auth-token`, `fix/pipeline-status`,
+Une branche = une tâche. Exemples : `feat/auth-token`, `fix/pipeline-status`,
 `docs/readme-install`.
 
-## Commit convention
+## Convention de commits
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/), with
-messages **in English**.
+On suit [Conventional Commits](https://www.conventionalcommits.org/), avec des
+messages **en français**.
 
-Types used:
+Types utilisés :
 
-- `feat:` new feature
-- `fix:` bug fix
+- `feat:` nouvelle fonctionnalité
+- `fix:` correction de bug
 - `docs:` documentation
-- `chore:` technical task (config, dependencies, cleanup...)
+- `chore:` tâche technique (config, dépendances, nettoyage...)
 
-Rules:
+Règles :
 
-- Subject line under 72 characters
-- Imperative subject, in English (e.g. `feat: add token-based authentication`)
-- The commit body (optional) explains why, not how
+- Ligne de sujet sous 72 caractères
+- Sujet à l'impératif, en français (ex : `feat: ajoute l'authentification par token`)
+- Le corps du message (optionnel) explique le pourquoi, pas le comment
 
-### Enabling the commit template
+### Activer le gabarit de commit
 
-A template is provided in `.gitmessage` at the repo root. To enable it on your
-machine:
+Un gabarit est fourni dans `.gitmessage` à la racine du dépôt. Pour l'activer
+sur votre poste :
 
 ```bash
 git config commit.template .gitmessage
 ```
 
-This command only affects your local configuration; everyone needs to run it
-once on their own machine.
+Cette commande n'affecte que votre configuration locale ; chacun doit l'exécuter
+une fois sur sa propre machine.
 
-## Workflow: branch → PR → review → merge
+## Workflow : branche → PR → review → merge
 
-1. Create your branch from an up-to-date `main`:
+1. Créer sa branche depuis `main` à jour :
    ```bash
    git checkout main
    git pull
-   git checkout -b feat/my-task
+   git checkout -b feat/ma-tache
    ```
-2. Commit regularly, with clear messages following the convention above.
-3. Push the branch and open a Pull Request against `main`, filling in the PR
-   template (description, relevant milestone, checklist).
-4. **Have another team member review the PR** before merging. No auto-merge
-   without review, even for a small task.
-5. Once the review is approved and feedback addressed, merge the PR (merge or
-   squash, team's preference) then delete the branch.
+2. Committer régulièrement, avec des messages clairs suivant la convention
+   ci-dessus.
+3. Pousser la branche et ouvrir une Pull Request vers `main`, en remplissant
+   le template de PR (description, milestone concerné, checklist).
+4. **Faire relire la PR par un autre membre de l'équipe** avant fusion. Pas
+   d'auto-merge sans review, même pour une petite tâche.
+5. Une fois la review approuvée et les retours traités, fusionner la PR
+   (merge ou squash selon préférence de l'équipe) puis supprimer la branche.
 
 ## Issues
 
-Every identified task must have an issue created via the `Task` template
-(`.github/ISSUE_TEMPLATE/task.md`), with acceptance criteria and an assigned
-member, linked to the relevant milestone.
+Chaque tâche identifiée doit avoir une issue créée via le template
+`Tâche` (`.github/ISSUE_TEMPLATE/tache.md`), avec critères d'acceptation
+et membre assigné, rattachée au milestone concerné.
