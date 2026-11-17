@@ -55,9 +55,18 @@ back-end and the front-end wiring landed on `main` on Nov 16, 2026, commits
 
 **Task distribution for Milestone 3**
 
-> **TODO (team):** who did what on the back-end and on the front/back
-> integration, per vertical. To be filled in by the team — not derivable
-> from the Git history alone.
+Milestone 3 followed the planned split: each person built the back-end of
+their vertical (routes and SQL queries), connected their screens to the API
+and covered their routes in the integration tests.
+
+| Person | Milestone 3 work |
+|---|---|
+| **Raphaël** | Auth & Team: signup, login, refresh-token rotation, logout and logout-all, Google sign-in, members and roles (`backend/src/modules/auth`); login page and Team page wired to the API |
+| **Théodore** | Boards & Tasks: tasks, kanban moves, several assignees per task, comments (`backend/src/modules/boards`); board and task detail panel wired to the API |
+| **Guillaume** | Projects & Deliverables: projects with archive / restore, deliverables, assets (`backend/src/modules/deliverables`); dashboard, deliverable and Assets pages wired to the API |
+
+Note on the Git history: the Milestone 3 commits were pushed from Théodore's
+account. We will explain the reasons in person.
 
 **Done**
 
@@ -104,6 +113,5 @@ starting a new revision round, editing an asset.
 **Remaining for Dec 14, 2026**
 
 - Final Milestone 3 write-up: [docs/StudioFlow — Milestone 3.docx](StudioFlow — Milestone 3.docx)
-  (screenshots in `docs/screenshots/milestone-3/`) — written; its "Who did what in Milestone 3"
-  section is still a TODO for the team, like the task distribution above.
+  (screenshots in `docs/screenshots/milestone-3/`) — done.
 - Presentation (5–7 min) — TODO.
