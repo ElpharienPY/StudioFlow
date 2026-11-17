@@ -1,11 +1,6 @@
 # Contributing Guide — StudioFlow
 
-This guide is maintained with the help of Claude Code, which also drives the
-day-to-day development workflow on this repo — scaffolding, implementation,
-and git operations are done through Claude Code, with the conventions below
-enforced on every step (commit format, small focused commits) so development
-stays consistent and these guidelines are actually respected rather than
-drifting over time.
+The AI tools we used are listed in the [Tools](README.md#tools) section of the README.
 
 This repository also serves as proof of participation for grading. Each member
 must commit **from their own GitHub account** — no squashed commits under a
