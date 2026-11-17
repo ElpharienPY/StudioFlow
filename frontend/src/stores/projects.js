@@ -290,6 +290,14 @@ const store = reactive({
     })
   },
 
+  // edits a task's title / description / due_date (editor+); the API answers with the updated task
+  async updateTask(taskId, changes) {
+    return store.write(async () => {
+      const { task } = await api.patch(`/tasks/${taskId}`, changes)
+      store.replaceTask(task)
+    })
+  },
+
   async updateTaskStage(taskId, stage) {
     return store.write(async () => {
       const { task } = await api.patch(`/tasks/${taskId}`, { stage })
@@ -320,6 +328,17 @@ const store = reactive({
       store.comments.push(comment)
       const task = store.taskById(taskId)
       if (task) task.comment_count = (task.comment_count ?? 0) + 1
+    })
+  },
+
+  // the author, or a project owner (moderation), can delete a comment
+  async deleteComment(commentId) {
+    return store.write(async () => {
+      const comment = store.comments.find((c) => c.id === commentId)
+      await api.delete(`/comments/${commentId}`)
+      store.comments = store.comments.filter((c) => c.id !== commentId)
+      const task = comment && store.taskById(comment.task_id)
+      if (task) task.comment_count = Math.max(0, (task.comment_count ?? 1) - 1)
     })
   },
 
