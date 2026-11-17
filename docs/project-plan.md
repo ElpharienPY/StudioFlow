@@ -1,39 +1,106 @@
 # StudioFlow — Project Plan
 
-## Équipe et répartition des tâches
+## Team and task distribution
 
-Découpage par feature verticale, alignée sur les tables de la base de
-données. Chaque personne garde sa vertical de bout en bout, du front-end
-(Milestone 2) au back-end (Milestone 3), pour une attribution claire du
-travail entre les 3 membres.
+Split by vertical feature, aligned with the database tables. Each person owns
+their vertical end to end, from front-end (Milestone 2) to back-end
+(Milestone 3), for a clear split of work between the 3 members.
 
-| Personne | Vertical | Périmètre | Tables |
+| Person | Vertical | Scope | Tables |
 |---|---|---|---|
-| **Raphaël** | Auth & Team | Inscription/connexion, session par token, connexion Google, gestion des membres et rôles | `users`, `accounts`, `refresh_tokens`, `project_members` |
-| **Théodore** | Boards & Tasks | Kanban (colonnes To Do/Doing/Done), détail tâche, commentaires | `tasks`, `comments` |
-| **Guillaume** | Projects & Deliverables | Dashboard des projets, vue deliverable (stepper de production, assets) | `projects`, `deliverables`, `assets` |
+| **Raphaël** | Auth & Team | Signup/login, token sessions, Google sign-in, member & role management | `users`, `accounts`, `refresh_tokens`, `project_members` |
+| **Théodore** | Boards & Tasks | Kanban (To Do/Doing/Done columns), task detail, comments | `tasks`, `task_assignees`, `comments` |
+| **Guillaume** | Projects & Deliverables | Projects dashboard, deliverable view (production stepper, assets) | `projects`, `deliverables`, `assets` |
 
-*Répartition Théodore/Guillaume à confirmer entre eux — les deux verticals
-sont interchangeables.*
+*Théodore/Guillaume split still to be confirmed between them — both verticals
+are interchangeable.*
 
-## Calendrier
+## Timeline
 
-À confirmer avec les dates officielles du cours si elles diffèrent.
-
-| Étape | Date cible | Contenu |
+| Step | Target date | Content |
 |---|---|---|
-| Milestone 1 | 5 oct. 2026 | Problem statement, ERD, maquettes, plan de projet |
-| Front-end — auth & squelette app | 19 oct. 2026 | Layout Vue.js, routing, écrans statiques |
-| Front-end — intégration des 3 verticals | 2 nov. 2026 | Composants dynamiques par vertical |
-| **Milestone 2** | **9 nov. 2026** | Front-end complet sur GitHub |
-| Back-end — API + DB par vertical | 30 nov. 2026 | Routes Node.js, requêtes MySQL par vertical |
-| Intégration front/back + tests | 7 déc. 2026 | Connexion complète, corrections de bugs |
-| **Milestone 3** | **14 déc. 2026** | Back-end complet, présentation (5–7 min) |
+| Milestone 1 | Oct 5, 2026 | Problem statement, ERD, mockups, project plan |
+| Front-end — auth & app skeleton | Oct 19, 2026 | Vue.js layout, routing, static screens |
+| Front-end — 3 verticals integration | Nov 2, 2026 | Dynamic components per vertical |
+| **Milestone 2** | **Nov 9, 2026** | Complete front-end on GitHub |
+| Back-end — API + DB per vertical | Nov 30, 2026 | Node.js routes, MySQL queries per vertical |
+| Front/back integration + tests | Dec 7, 2026 | Full connection, bug fixes |
+| **Milestone 3** | **Dec 14, 2026** | Complete back-end, presentation (5–7 min) |
 
 ## Notes
 
-- Auth & Team est la vertical la plus complexe (sécurité, tokens, OAuth) et
-  bloque les deux autres pour les tests end-to-end — à démarrer en premier.
-- Le stage courant d'un deliverable (vu dans les maquettes) est calculé à
-  partir des tâches, pas stocké — dépendance légère entre Boards & Tasks et
-  Projects & Deliverables à garder en tête à l'intégration.
+- Auth & Team is the most complex vertical (security, tokens, OAuth) and
+  blocks the other two for end-to-end testing — start it first.
+- A deliverable's current stage (seen in the mockups) is computed from its
+  tasks, not stored — a light coupling between Boards & Tasks and Projects &
+  Deliverables to keep in mind at integration time.
+
+## Milestone 2 progress (Oct 2026)
+
+- Front-end scaffolded with Vue 3 + Vite + Vue Router (state handled with
+  plain Vue `reactive()`, no extra state-management library), plain CSS
+  (design tokens as CSS custom properties in `frontend/src/style.css`) —
+  see `frontend/README.md` for conventions.
+- Built against mock data (`frontend/src/data/fixtures.js`) shaped like the
+  `db/schema.sql` tables, since the back-end lands in Milestone 3.
+- Task distribution (verticals, see table above) is unchanged from
+  Milestone 1.
+- Full write-up: [docs/StudioFlow — Milestone 2.docx](StudioFlow — Milestone 2.docx).
+
+## Milestone 3 progress (Nov 2026)
+
+What is in the repository, based on the code and the Git history (the
+back-end and the front-end wiring landed on `main` on Nov 16, 2026, commits
+`70b5e16`, `7559f47` and `b4ca941`).
+
+**Task distribution for Milestone 3**
+
+> **TODO (team):** who did what on the back-end and on the front/back
+> integration, per vertical. To be filled in by the team — not derivable
+> from the Git history alone.
+
+**Done**
+
+- **Back-end REST API** in `backend/` (Node.js, Express 5, `mysql2`), split
+  by vertical in `backend/src/modules/` (`auth`, `boards`, `deliverables`),
+  with shared middleware (authentication, per-project access, rate limit,
+  errors) and input validation by whitelist (`backend/src/utils/validate.js`).
+  All SQL queries use placeholders.
+- **Auth & Team**: signup, login, logout, logout of every session, `GET
+  /auth/me`; 15-min JWT access token + refresh token in an `httpOnly` cookie,
+  rotated on every use and stored as a SHA-256 hash; passwords hashed with
+  bcrypt (cost 12); login/signup limited to 20 attempts per 15 min per IP.
+  Members: invite by email, change role, remove, leave; a project always
+  keeps at least one owner. `POST /auth/google` exists but only works with a
+  `GOOGLE_CLIENT_ID`, and the front-end has no Google button.
+- **Projects & Deliverables**: projects (create, edit, archive/unarchive,
+  delete once archived), deliverables (create, edit, delete, new revision
+  round), assets as links with versions. A deliverable's stage is computed
+  in SQL from its tasks, not stored.
+- **Boards & Tasks**: tasks (create, edit, delete), several assignees per
+  task (new `task_assignees` table, migration
+  `db/migrations/001_task_assignees.sql`), drag & drop move in a transaction
+  (`SELECT … FOR UPDATE` and position renumbering), comments.
+- **Roles**: `owner` > `editor` > `viewer`; non-members get `404`; archived
+  projects are read-only (`409`); viewers can comment.
+- **Database**: 10 tables in `db/schema.sql`; `npm run db:reset` loads the
+  demo data.
+- **Front-end wired to the API** (`frontend/src/api.js` and the stores):
+  sign in / sign up, session kept across reloads, projects dashboard (create,
+  delete), deliverables (create), kanban with drag & drop and status menu,
+  task detail (assignees, stage, delete, comments), team management. Write
+  actions are hidden from viewers.
+- **Tests**: 8 integration tests (`npm test` in `backend/`, Node's built-in
+  test runner, against the real database).
+
+**Available in the API but without a screen yet**
+
+Adding/editing/deleting assets, task due date, title and description edits,
+archive/unarchive (the delete button archives then deletes), editing a
+project or its health status, editing/deleting a deliverable, new revision
+round, deleting a comment, sign out of every device.
+
+**Remaining for Dec 14, 2026**
+
+- Final Milestone 3 write-up in `docs/` — TODO.
+- Presentation (5–7 min) — TODO.

@@ -1,70 +1,75 @@
-# Guide de contribution — StudioFlow
+# Contributing Guide — StudioFlow
 
-Ce dépôt sert aussi de preuve de participation pour la notation du projet.
-Chaque membre doit committer **depuis son propre compte GitHub** — pas de
-commits groupés sous un seul compte, pas de co-écriture qui masquerait qui a
-fait quoi.
+This guide is maintained with the help of Claude Code, which also drives the
+day-to-day development workflow on this repo — scaffolding, implementation,
+and git operations are done through Claude Code, with the conventions below
+enforced on every step (commit format, small focused commits) so development
+stays consistent and these guidelines are actually respected rather than
+drifting over time.
 
-## Convention de branches
+This repository also serves as proof of participation for grading. Each member
+must commit **from their own GitHub account** — no squashed commits under a
+single account, no co-authoring that would hide who did what.
 
-- `main` : branche toujours fonctionnelle. **Jamais de push direct.**
-  Toute modification passe par une Pull Request.
-- `feat/<nom-court>` : nouvelle fonctionnalité
-- `fix/<nom-court>` : correction de bug
-- `docs/<nom-court>` : documentation uniquement
+## Branches
 
-Une branche = une tâche. Exemples : `feat/auth-token`, `fix/pipeline-status`,
-`docs/readme-install`.
+- `main`: the shared branch, kept working (back-end tests pass, front-end
+  builds). Commits go directly on `main`; a Pull Request is **not required**.
+- A separate branch is optional, for a larger or risky change you want to
+  share before it lands. Name it `feat/<short-name>`, `fix/<short-name>` or
+  `docs/<short-name>` (e.g. `feat/auth-token`, `fix/pipeline-status`).
 
-## Convention de commits
+## Commit convention
 
-On suit [Conventional Commits](https://www.conventionalcommits.org/), avec des
-messages **en français**.
+We follow [Conventional Commits](https://www.conventionalcommits.org/), with
+messages **in English**.
 
-Types utilisés :
+Types used:
 
-- `feat:` nouvelle fonctionnalité
-- `fix:` correction de bug
+- `feat:` new feature
+- `fix:` bug fix
 - `docs:` documentation
-- `chore:` tâche technique (config, dépendances, nettoyage...)
+- `chore:` technical task (config, dependencies, cleanup...)
 
-Règles :
+Rules:
 
-- Ligne de sujet sous 72 caractères
-- Sujet à l'impératif, en français (ex : `feat: ajoute l'authentification par token`)
-- Le corps du message (optionnel) explique le pourquoi, pas le comment
+- Subject line under 72 characters
+- Imperative subject, in English (e.g. `feat: add token-based authentication`)
+- The commit body (optional) explains why, not how
 
-### Activer le gabarit de commit
+### Enabling the commit template
 
-Un gabarit est fourni dans `.gitmessage` à la racine du dépôt. Pour l'activer
-sur votre poste :
+A template is provided in `.gitmessage` at the repo root. To enable it on your
+machine:
 
 ```bash
 git config commit.template .gitmessage
 ```
 
-Cette commande n'affecte que votre configuration locale ; chacun doit l'exécuter
-une fois sur sa propre machine.
+This command only affects your local configuration; everyone needs to run it
+once on their own machine.
 
-## Workflow : branche → PR → review → merge
+## Workflow: commit on `main`
 
-1. Créer sa branche depuis `main` à jour :
+1. Start from an up-to-date `main`:
    ```bash
    git checkout main
    git pull
-   git checkout -b feat/ma-tache
    ```
-2. Committer régulièrement, avec des messages clairs suivant la convention
-   ci-dessus.
-3. Pousser la branche et ouvrir une Pull Request vers `main`, en remplissant
-   le template de PR (description, milestone concerné, checklist).
-4. **Faire relire la PR par un autre membre de l'équipe** avant fusion. Pas
-   d'auto-merge sans review, même pour une petite tâche.
-5. Une fois la review approuvée et les retours traités, fusionner la PR
-   (merge ou squash selon préférence de l'équipe) puis supprimer la branche.
+2. Make one commit per task, with a message following the convention above.
+3. Before pushing a code change, check that nothing is broken:
+   ```bash
+   cd backend && npm test && npm run db:reset   # tests write to the demo database
+   cd ../frontend && npm run build
+   ```
+4. Re-read your commits (`git log -p origin/main..`), then `git push`.
+
+If you used an optional branch, you can open a Pull Request with the template
+(`.github/pull_request_template.md`) to get a review, or merge it into `main`
+yourself once it is up to date.
 
 ## Issues
 
-Chaque tâche identifiée doit avoir une issue créée via le template
-`Tâche` (`.github/ISSUE_TEMPLATE/tache.md`), avec critères d'acceptation
-et membre assigné, rattachée au milestone concerné.
+Every identified task must have an issue created via the `Task` template
+(`.github/ISSUE_TEMPLATE/task.md`), with acceptance criteria and an assigned
+member, linked to the relevant milestone.

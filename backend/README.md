@@ -24,7 +24,7 @@ Shared code: `src/middleware` (auth, per-project access, errors, rate limit), `s
    (`db:init` runs `CREATE DATABASE`, hence the global grant — fine for local dev, narrow it in production.)
 2. `cp .env.example .env` and adjust it (never commit `.env`). An existing `.env` keeps working.
 3. `npm install`
-4. `npm run db:reset` — creates every table from `../db/schema.sql` **and** loads demo data (the front-end's mock data).
+4. `npm run db:reset` — creates the 10 tables from `../db/schema.sql` **and** loads demo data (from `frontend/src/data/fixtures.js`).
    Demo login: `user1@studioflow.co` / `password123` (users 1–6 share that password).
 5. `npm run dev` → http://localhost:4000 (`GET /health`, `GET /health/db`)
 
@@ -34,7 +34,7 @@ Shared code: `src/middleware` (auth, per-project access, errors, rate limit), `s
 | `npm run db:init` | drops & recreates all tables (**erases data**) |
 | `npm run db:seed` | empties the tables and loads demo data (**erases data**) |
 | `npm run db:reset` | both |
-| `npm test` | integration tests against the real DB (they create their own users/projects) |
+| `npm test` | 8 integration tests against the real DB. They add their own users/projects to it, so run `npm run db:reset` afterwards to get the clean demo data back |
 
 ## Conventions
 

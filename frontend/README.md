@@ -1,7 +1,7 @@
 # StudioFlow — Front-end
 
-Vue 3 (`<script setup>`) + Vite, Vue Router. Built for Milestone 2 against
-mock data shaped like our real schema — the actual API lands in Milestone 3.
+Vue 3 (`<script setup>`) + Vite, Vue Router. The app talks to the StudioFlow
+REST API in `../backend` (see `backend/README.md` for the endpoints).
 
 ## Stack, and why
 
@@ -13,29 +13,23 @@ mock data shaped like our real schema — the actual API lands in Milestone 3.
   behave the way a reviewer expects, instead of everything living in one
   component's local state.
 - **No state-management library (no Pinia)**: `stores/auth.js` and
-  `stores/projects.js` are the single source of truth for session state and
-  all the mock project/task/deliverable data, but they're just plain Vue
+  `stores/projects.js` are the single source of truth for the session and
+  the project/deliverable/task/comment/asset data, but they're just plain Vue
   `reactive()` objects — `useAuthStore()` / `useProjectsStore()` return the
   same module-level singleton every time, with `get` accessors standing in
-  for computed getters. Centralizing the data there (instead of passing
-  props down through every component) still means that swapping in real API
-  calls in Milestone 3 touches two files, not every view — a dedicated
-  library like Pinia wasn't pulling its weight for an app this size, and
-  Vue's own reactivity already gives us the same pattern for free.
+  for computed getters. A dedicated library like Pinia wasn't pulling its
+  weight for an app this size, and Vue's own reactivity already gives us the
+  same pattern for free.
 
 ## Styling: plain CSS, not Tailwind
 
 We first reached for Tailwind CSS — it's a fast fit for the mockups' custom
 dark design system (lots of small variant states: status pills, a stepper,
-avatar stacks). But our professor teaches a Tailwind course on
-good4college.com, and we couldn't confirm our setup would match those
-conventions — the lesson page is client-rendered and gated, so it wasn't
-fetchable to check. Rather than risk contradicting something specifically
-taught in class, we switched to plain CSS: one `<style scoped>` block per
-`.vue` component, with design tokens as CSS custom properties in
-`src/style.css`. That also has a real upside for the team — Théodore and
-Guillaume inherit these files without first needing to learn a utility-class
-framework, and there's one less dependency in the build.
+avatar stacks). We switched to plain CSS instead: one `<style scoped>` block
+per `.vue` component, with design tokens as CSS custom properties in
+`src/style.css`. That keeps the setup simple for the whole team — no one
+needs to learn a utility-class framework first — and there's one less
+dependency in the build.
 
 ## Design direction
 
@@ -46,39 +40,51 @@ Pro to save time and quickly land on an art direction rather than designing
 one from scratch. All colors/spacing/radii live as CSS custom properties in
 `src/style.css` and get reused everywhere instead of hardcoded values.
 
-## Mock data & auth
+## Talking to the API
 
-There's no back-end yet, so `src/data/fixtures.js` plays that role for now:
-plain JS objects shaped exactly like the `db/schema.sql` tables — same field
-names, same enum values (`health_status`, `stage`, `kind`, etc.). The stores
-read and mutate that data as if it came from an API, so wiring up real HTTP
-calls in Milestone 3 should mean rewriting the inside of the store methods,
-not renaming anything the components depend on.
-
-Auth works the same way: `stores/auth.js` does a mock sign-in/sign-up
-against the fixture users (no password is actually checked — there's
-nothing to check it against yet) and persists the session to `localStorage`.
-The route guard in `router/index.js` treats that the same way it'll treat a
-real session later.
+- **`src/api.js`** is a small `fetch` wrapper used by the stores. The API
+  URL comes from `VITE_API_URL` (optional, in `frontend/.env`) and defaults to
+  `http://localhost:4000`. Every request is sent with
+  `credentials: 'include'` so the browser attaches the refresh cookie.
+  API errors are thrown as `ApiError { status, code, message, details }`.
+- **Access token in memory only**: the short-lived access token (15 min)
+  returned by `/auth/login`, `/auth/signup` and `/auth/refresh` is kept in a
+  module variable in `api.js` and sent as `Authorization: Bearer …`. It is
+  never written to `localStorage` or a cookie.
+- **Refresh cookie**: the refresh token is an `httpOnly` cookie set by the
+  back-end (path `/auth`), so JavaScript never reads it. When a request gets
+  `401 token_expired`, `api.js` calls `POST /auth/refresh` once — concurrent
+  requests share the same pending refresh — then retries the request. If the
+  refresh fails, the session is cleared and the app goes back to `/login`.
+- **Page reload**: `main.js` calls `auth.init()` before mounting, which tries
+  `POST /auth/refresh` with the cookie, so a reload keeps the user signed in.
+- **Stores**: views read synchronously from the stores (`store.tasksOf(id)`,
+  `store.membersOf(id)`…). The `load*` actions fetch from the API; every write
+  calls the API first, then updates the local state with what the server
+  returned. A failed write puts its message in `store.error`, shown as a
+  banner by `AppShell`. The only thing kept in `localStorage` is the id of
+  the last opened project (`studioflow.activeProject`), a UI convenience.
+- **Roles**: `store.canEditProject(projectId)` (owner or editor, project not
+  archived) decides whether write actions are shown; viewers can still
+  comment. The back-end enforces the same rules in any case.
 
 ### Dev sign-in shortcut
 
-We iterated through dozens of reloads a day building this, and every one of
-them landed back on `/login` because the route guard requires a session.
-Since mock auth always "succeeds" for a known email, retyping credentials
-each time tested nothing — it just slowed down iteration. So we added a
-**"⚡ Dev sign-in"** button on the login screen that signs in instantly as
-the seed user. It's gated behind `import.meta.env.DEV`, so it's compiled out
-of `npm run build` and never reaches the graded/production build — the real
-Login/Signup form (and its validation) stays exactly what gets reviewed and
-what Milestone 3's real auth will replace.
+The login screen has a **"⚡ Dev sign-in"** button that signs in as the demo
+user created by `npm run db:seed` (`user1@studioflow.co`), so we don't retype
+credentials on every reload while iterating. It is rendered only when
+`import.meta.env.DEV` is true, i.e. with `npm run dev`; it is hidden in
+`npm run build`. Its code — including the demo email and password — is still
+present in the production bundle, it is just never displayed.
 
-### Mock user names
+### Demo user names
 
-Mock users are deliberately generic (`User 1`, `User 2`, ...,
+Demo users are deliberately generic (`User 1`, `User 2`, ...,
 `user1@studioflow.co`, ...) instead of realistic-sounding names. This is
-dev/placeholder data, not production content, and we wanted that obvious at
-a glance rather than accidentally reading as real people.
+placeholder data, not production content, and we wanted that obvious at a
+glance rather than accidentally reading as real people. The back-end seed
+script loads them from `src/data/fixtures.js`; the app itself never imports
+that file.
 
 ## Conventions
 
@@ -87,15 +93,18 @@ a glance rather than accidentally reading as real people.
 - **Design tokens** centralized in `src/style.css`
   (`:root { --color-..., --space-..., --radius-... }`). Always reuse these
   variables instead of hardcoded values.
-- **Mock data** lives in `src/data/fixtures.js`, read through the stores in
-  `src/stores/` (plain Vue `reactive()`, no state-management library) —
-  components never import fixtures directly.
+- **Data access** goes through the stores in `src/stores/` — components
+  never call `fetch` or `api.js` directly.
 - Everything in this repo (code, comments, docs, commit messages) is in
   English, team-voiced ("we"), per our workflow convention.
 
 ## Run the project
 
+The back-end must be running first (see `../backend/README.md` or
+`../DEMARRAGE.md`).
+
 ```bash
 npm install
-npm run dev
+npm run dev     # http://localhost:5173
+npm run build   # production build in dist/
 ```
