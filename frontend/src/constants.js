@@ -4,6 +4,9 @@ export const STAGE_ORDER = ['concept', 'script', 'shooting', 'editing', 'thumbna
 // Platforms a deliverable is made for (same values as the `deliverables.platform` enum).
 export const PLATFORMS = ['youtube', 'tiktok', 'instagram', 'client', 'other']
 
+// Kinds of asset (same values as the `assets.kind` enum).
+export const ASSET_KINDS = ['script', 'raw_footage', 'edit', 'thumbnail', 'export']
+
 // The three kanban columns (same values as the `tasks.status` enum).
 export const COLUMNS = [
   { status: 'todo', title: 'To Do', color: '#fbbf24' },

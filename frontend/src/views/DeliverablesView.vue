@@ -6,6 +6,7 @@ import AppShell from '../components/layout/AppShell.vue'
 import ProductionStepper from '../components/deliverables/ProductionStepper.vue'
 import AssetRow from '../components/deliverables/AssetRow.vue'
 import NewDeliverableForm from '../components/deliverables/NewDeliverableForm.vue'
+import NewAssetForm from '../components/deliverables/NewAssetForm.vue'
 import { formatDay } from '../dates.js'
 
 const store = useProjectsStore()
@@ -38,6 +39,14 @@ const overallProgress = computed(() => {
 
 const formatDate = (day) => formatDay(day, { withYear: true })
 
+// owner / editor of a project that isn't archived
+const canEdit = computed(() => store.activeProjectId !== null && store.canEditProject(store.activeProjectId))
+
+async function removeAsset(asset) {
+  if (!window.confirm(`Delete "${asset.label}" v${asset.version}?`)) return
+  await store.deleteAsset(asset.id)
+}
+
 function openBoard() {
   router.push('/boards')
 }
@@ -69,7 +78,7 @@ function openBoard() {
     </header>
 
     <NewDeliverableForm
-      v-if="!deliverable && store.activeProjectId && store.canEditProject(store.activeProjectId)"
+      v-if="!deliverable && canEdit"
       :project-id="store.activeProjectId"
     />
 
@@ -84,9 +93,12 @@ function openBoard() {
             :key="a.id"
             :asset="a"
             :is-latest="a.id === latestAssetId"
+            :removable="canEdit"
+            @remove="removeAsset(a)"
           />
           <p v-if="!deliverableAssets.length" class="empty">No assets uploaded yet.</p>
         </div>
+        <NewAssetForm v-if="deliverable && canEdit" :deliverable-id="deliverable.id" />
       </section>
 
       <aside class="summary section">

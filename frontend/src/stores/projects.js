@@ -331,6 +331,23 @@ const store = reactive({
     })
   },
 
+  // an asset is a link to the file (Drive, Frame.io...); the API picks the next version number
+  // for the same label + kind
+  async addAsset(deliverableId, { label, url, kind }) {
+    return store.write(async () => {
+      const { asset } = await api.post(`/deliverables/${deliverableId}/assets`, { label, url, kind })
+      store.assets.unshift(asset) // newest first, like the API lists them
+      return asset
+    })
+  },
+
+  async deleteAsset(assetId) {
+    return store.write(async () => {
+      await api.delete(`/assets/${assetId}`)
+      store.assets = store.assets.filter((a) => a.id !== assetId)
+    })
+  },
+
   // the author, or a project owner (moderation), can delete a comment
   async deleteComment(commentId) {
     return store.write(async () => {

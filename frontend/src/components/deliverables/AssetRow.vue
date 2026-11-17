@@ -4,7 +4,9 @@ import { useProjectsStore } from '../../stores/projects.js'
 const props = defineProps({
   asset: { type: Object, required: true },
   isLatest: { type: Boolean, default: false },
+  removable: { type: Boolean, default: false }, // editor+ on a non-archived project
 })
+const emit = defineEmits(['remove'])
 
 const store = useProjectsStore()
 
@@ -25,11 +27,21 @@ function formatDate(iso) {
   <div class="asset-row">
     <span class="icon">{{ KIND_ICON[asset.kind] ?? '📁' }}</span>
     <div class="info">
-      <div class="label">{{ asset.label }}</div>
+      <a class="label" :href="asset.url" target="_blank" rel="noopener noreferrer">{{ asset.label }}</a>
       <div class="meta">{{ store.userById(asset.uploaded_by)?.full_name ?? 'Unknown' }} · {{ formatDate(asset.created_at) }}</div>
     </div>
     <span v-if="isLatest" class="latest">latest</span>
     <span class="version">v{{ asset.version }}</span>
+    <button
+      v-if="removable"
+      type="button"
+      class="remove"
+      :title="`Delete ${asset.label} v${asset.version}`"
+      :aria-label="`Delete ${asset.label} v${asset.version}`"
+      @click="emit('remove')"
+    >
+      ✕
+    </button>
   </div>
 </template>
 
@@ -56,8 +68,28 @@ function formatDate(iso) {
 }
 
 .label {
+  display: block;
   font-size: 0.9rem;
   font-weight: 600;
+  color: var(--color-surface-50);
+  text-decoration: none;
+}
+
+.label:hover {
+  color: var(--color-accent-400);
+  text-decoration: underline;
+}
+
+.remove {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.remove:hover {
+  color: #f87171;
 }
 
 .meta {

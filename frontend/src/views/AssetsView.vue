@@ -3,11 +3,10 @@ import { ref, computed } from 'vue'
 import { useProjectsStore } from '../stores/projects.js'
 import AppShell from '../components/layout/AppShell.vue'
 import AssetRow from '../components/deliverables/AssetRow.vue'
+import { ASSET_KINDS as KINDS } from '../constants.js'
 
 const store = useProjectsStore()
 const kindFilter = ref('all')
-
-const KINDS = ['script', 'raw_footage', 'edit', 'thumbnail', 'export']
 
 const groups = computed(() => {
   if (!store.activeProjectId) return []
