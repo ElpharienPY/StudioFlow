@@ -1,14 +1,14 @@
 ## Description
 
-<!-- Que fait cette PR ? Pourquoi ce changement est-il nécessaire ? -->
+<!-- What does this PR do? Why is this change needed? -->
 
-## Milestone concerné
+## Milestone
 
-<!-- M1 - Documentation / M2 - Frontend / M3 - Backend -->
+<!-- M1 - Documentation / M2 - Front-end / M3 - Back-end -->
 
 ## Checklist
 
-- [ ] Testé localement
-- [ ] Documentation à jour (README, CONTRIBUTING, commentaires si besoin)
-- [ ] Aucune modification non voulue de `db/schema.sql`
-- [ ] Branche à jour avec `main`
+- [ ] Tested locally (`npm test` in `backend/`, `npm run build` in `frontend/`)
+- [ ] Documentation up to date (README, CONTRIBUTING, comments if needed)
+- [ ] No unintended change to `db/schema.sql`
+- [ ] Branch up to date with `main`

@@ -65,6 +65,6 @@ yourself once it is up to date.
 
 ## Issues
 
-Every identified task must have an issue created via the `Task` template
-(`.github/ISSUE_TEMPLATE/task.md`), with acceptance criteria and an assigned
-member, linked to the relevant milestone.
+Issues are optional. To track a task on GitHub, open an issue with the `Task`
+template (`.github/ISSUE_TEMPLATE/task.md`): acceptance criteria, assigned
+member and relevant milestone.
